@@ -111,3 +111,4 @@ with open(PARAM_FILE.gnuplot_file_traj, 'w') as GNUPLOT_SCRIPT_FILE:
 # ---------------------------------------------------------------------------------------------- #
 sys.stdout = original_stdout 				# Reset the standard output to its original value
 os.system("gnuplot " + PARAM_FILE.gnuplot_file_traj)	# Write the png file running the gnuplot script
+print('testing push to g03')
