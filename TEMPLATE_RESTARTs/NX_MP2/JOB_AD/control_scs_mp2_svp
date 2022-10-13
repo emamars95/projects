@@ -1,0 +1,28 @@
+
+
+a coord
+*
+no
+b all aug-cc-pVDZ
+*
+eht
+
+
+
+scf
+iter
+100
+
+cc
+freeze
+*
+cbas
+b all aug-cc-pVDZ
+*
+memory
+2000
+ricc2
+mp2
+*
+*
+*

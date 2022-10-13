@@ -1,0 +1,13 @@
+basis    /scratch/SOFTWARE/BAGEL_1.2.0/share/cc-pvdz.json
+df_basis /scratch/SOFTWARE/BAGEL_1.2.0/share/cc-pvdz-jkfit.json
+nact 	9
+nclosed 18
+nstate 	3 0 0
+xms
+ms
+sssr
+shift 	0.5
+maxziter 250
+
+method xms-caspt2
+save_step 1

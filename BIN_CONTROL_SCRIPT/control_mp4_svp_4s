@@ -1,0 +1,28 @@
+
+
+a coord
+*
+no
+b all def2-SVP
+*
+eht
+
+
+
+scf
+iter
+100
+
+cc
+freeze
+*
+cbas
+b all def2-SVP
+*
+memory
+2000
+ricc2
+mp4
+*
+*
+*

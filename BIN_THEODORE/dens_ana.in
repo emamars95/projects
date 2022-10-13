@@ -1,0 +1,11 @@
+rtype='nos' 
+mo_file='./casscf-12-10_3s_traj4_100.mol' 
+ana_files=['./casscf-12-10_3s_traj4_100_s0.mol','./casscf-12-10_3s_traj4_100_s1.mol','./casscf-12-10_3s_traj4_100_s2.mol'] 
+rd_ene=False 
+pop_ana=True 
+unpaired_ana=True 
+AD_ana=True 
+molden_orbitals=True 
+alphabeta=False 
+BO_ana=True 
+prop_list=['nu', 'nunl', 'p']

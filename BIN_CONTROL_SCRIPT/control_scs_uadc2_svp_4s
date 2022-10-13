@@ -1,0 +1,36 @@
+
+
+a coord
+*
+no
+b all def2-SVP
+*
+eht
+
+
+n
+s
+*
+
+scf
+iter
+100
+
+cc
+freeze
+*
+cbas
+b all def2-SVP
+*
+memory
+2000
+ricc2
+adc(2)
+scs cos=1.2d0 css=0.3333d0
+*
+exci
+irrep=a multiplicity=1 nexc=4
+spectrum states=all
+*
+*
+*

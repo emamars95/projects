@@ -1,0 +1,29 @@
+
+
+a coord
+*
+no
+b all def2-SVP
+*
+eht
+
+
+
+scf
+iter
+100
+
+dft
+on 
+func 
+pbe0
+*
+ex 
+ciss
+*
+a 3
+*
+*
+
+*
+

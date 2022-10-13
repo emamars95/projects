@@ -1,0 +1,45 @@
+{ "bagel" : [
+  {
+    "title" : "molecule",
+    "basis" :    "/scratch/SOFTWARE/BAGEL_1.2.0/share/cc-pvdz.json",
+    "df_basis" : "/scratch/SOFTWARE/BAGEL_1.2.0/share/cc-pvdz-jkfit.json",
+    "geometry" : [
+        { "atom" : "C",  "xyz" : [ 0.00000,  0.00000,  0.00000]},   
+        { "atom" : "H",  "xyz" : [ 1.10820,  0.00000,  0.00000]},   
+        { "atom" : "O",  "xyz" : [-0.61697,  0.00000, -1.02925]},   
+        { "atom" : "C",  "xyz" : [-0.64693, -0.00955,  1.36857]},  
+        { "atom" : "H",  "xyz" : [-0.31399,  0.89125,  1.90186]},  
+        { "atom" : "C",  "xyz" : [-0.24592, -1.26248,  2.13298]},  
+        { "atom" : "H",  "xyz" : [ 0.83909, -1.32076,  2.22294]},   
+        { "atom" : "H",  "xyz" : [-0.67983, -1.23723,  3.13083]},  
+        { "atom" : "H",  "xyz" : [-0.60696, -2.14973,  1.61243]},  
+        { "atom" : "O",  "xyz" : [-2.04831, -0.02122,  1.27567]},
+        { "atom" : "O",  "xyz" : [-2.45768,  1.20447,  0.68993]},
+        { "atom" : "H",  "xyz" : [-2.40983,  0.98472, -0.25374]}
+                ]
+  },
+  {
+   "title" : "load_ref",
+    "file" : "./casscf_fc",
+    "continue_geom" : false
+  },
+  {
+    "title"  : "casscf",
+    "nstate" : 3,
+    "nact"   : 9,
+    "nclosed": 18,
+    "nspin"  : 0,
+    "charge" : 0,
+    "dipole" : "true",
+    "maxiter": 200
+  },
+  {
+    "title" : "save_ref",
+    "file" : "./casscf_fc"
+  },
+  {
+    "title" : "print",
+    "file" : "./casscf_fc.molden",
+    "orbitals" : true
+   }
+]}

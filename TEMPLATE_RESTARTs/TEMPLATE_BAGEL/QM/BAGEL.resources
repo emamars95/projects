@@ -1,0 +1,8 @@
+bagel /scratch/SOFTWARE/BAGEL_1.2.0/src/
+pyquante /ddn/home/fzzq22/CODE_AND_SCRIPT/pyquante_lib/PyQuante
+scratchdir ./scrdir/
+memory 2000
+ncpu 2
+dipolelevel 0
+project BAGEL
+wfoverlap $SHARC/wfoverlap.x

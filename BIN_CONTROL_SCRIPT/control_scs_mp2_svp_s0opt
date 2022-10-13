@@ -1,0 +1,30 @@
+
+
+a coord
+*
+no
+b all def2-SVP
+*
+eht
+
+
+
+scf
+iter
+100
+
+cc
+freeze
+*
+cbas
+b all def2-SVP
+*
+memory
+2000
+ricc2
+geoopt model=mp2 state=(x)
+scs cos=1.2d0 css=0.3333d0
+*
+*
+*
+

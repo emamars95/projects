@@ -1,0 +1,36 @@
+#! /usr/bin/bash
+
+here=`pwd`
+controlfileNAME="script_for_control_tzvp_10s"
+controlfilePATH="/ddn/home/fzzq22/CODE_AND_SCRIPT/script_for_control_bin/"
+controlscript=${controlfilePATH}${controlfileNAME}
+
+for i in {0..33}
+do
+ 	#the folder in which the calculation will be run (with geo $geometryfile)
+	foldername=adc2_fc1a-S1minimum-TS_Hshift-MECI-S0S1_${i}
+	geometryfile=fctomeci_${i}.xyz
+
+	cd ${here}
+
+	#Make the folder and copy the file in
+	mkdir -p ${foldername}
+	cp $geometryfile  $foldername
+	cp $controlscript $foldername
+
+	#convert xyz file in the coord file readable from Turbomole
+	cd  $foldername
+	x2t $geometryfile > coord
+
+	#Once the file are copied the control file can be generated
+	define < $controlfileNAME
+
+	#The scf calculation is perfomerd
+	dscf > dscf.out
+	
+	#The ricc2  calculation is lunched, the program will continue in background
+	ricc2 > ricc2.out &
+
+	#sleep 10
+done
+
