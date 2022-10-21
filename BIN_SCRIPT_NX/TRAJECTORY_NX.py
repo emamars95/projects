@@ -30,8 +30,7 @@ def COPY_FILE(TRAJ_NAME, RESULT_FOLDER, FILE_TO_COPY, TIME_TRAJ_IS):
 	return
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
-def CHECK_RESTARTED_DYNAMICS(XMS_RESTART_FOLDER_NAME, SUMMARY_STRING):
-	os.path.basename(os.path.normpath(XMS_RESTART_FOLDER_NAME))
+def CHECK_RESTARTED_DYNAMICS_HPP(XMS_RESTART_FOLDER_NAME, SUMMARY_STRING):
 	METHOD_USED, TIME_RESTART	= os.path.basename(os.path.normpath(XMS_RESTART_FOLDER_NAME)).split("_")[0], float(os.path.basename(os.path.normpath(XMS_RESTART_FOLDER_NAME)).split("_")[1])
 	D1_FILE				= "/d1_" + str(TIME_RESTART) + "fs.tmp"
 	D1_TIME_RESTART			= GET_DATA(XMS_RESTART_FOLDER_NAME + D1_FILE, 4)  # Extract the d1 value at the restart time
@@ -99,6 +98,13 @@ def CHECK_REACTIVITY_BH3NH3(RESULT_FOLDER, SUMMARY_STRING, DATA_STRING):
 	return SUMMARY_STRING, DATA_STRING
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
+def CHECK_RESTARTED_DYNAMICS_BH3NH3(RESTART_FOLDER_NAME, "", ""):
+    METHOD_USED, TIME_RESTART       = os.path.basename(os.path.normpath(RESTART_FOLDER_NAME)).split("_")[0], float(os.path.basename(os.path.normpath(RESTART_FOLDER_NAME)).split("_")[1])
+    CHECK_REACTIVITY_BH3NH3         
+return SUMMARY_STRING
+
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def TAIL_COORDINATES_FILE(RESULT_FOLDER, LINE):
 	coord_file		= RESULT_FOLDER + "/" + PARAM_FILE.coordinate_file
 	coord_file_to_use	= RESULT_FOLDER + "/" + PARAM_FILE.coordinate_file_to_use
@@ -114,7 +120,7 @@ def CHECK_REACTIVITY(RESULT_FOLDER, TIME_TRAJ_IS, SUMMARY_STRING, DATA_STRING):
         if   WHICH_MOLECULE == "HPP":
                 SUMMARY_STRING, DATA_STRING     = CHECK_REACTIVITY_HPP(RESULT_FOLDER, XMS_RESTART_FOLDER_NAME, SUMMARY_STRING, DATA_STRING)
                 XMS_RESTART_FOLDER_NAME         = glob.glob(TRAJ_FOLDER  + "XMS-RESTART-12-9*")[0]      # Name in which the trajectory was restarted for HPP
-                SUMMARY_STRING                  = CHECK_RESTARTED_DYNAMICS(XMS_RESTART_FOLDER_NAME, SUMMARY_STRING)
+                SUMMARY_STRING                  = CHECK_RESTARTED_DYNAMICS_HPP(XMS_RESTART_FOLDER_NAME, SUMMARY_STRING)
         elif WHICH_MOLECULE == "PYRONE":
                 SUMMARY_STRING, DATA_STRING     = CHECK_REACTIVITY_NRMECI(RESULT_FOLDER, SUMMARY_STRING, DATA_STRING)
         elif WHICH_MOLECULE == "FORMALDEHYDE":
@@ -216,8 +222,9 @@ def main():
 		ALLNAME	= sorted_nicely(glob.glob("TRAJ*"))
 
 		SUMMARY_FILE 	= open( PARAM_FILE.summury_file  , "w")
-		DATA_FILE	= open( PARAM_FILE.traj_file, "w")	
-
+		DATA_FILE	= open( PARAM_FILE.traj_file, "w")
+            D
+		
 		for TRAJ_NAME in ALLNAME:
 			TRAJ_FOLDER	= PWD + "/" + TRAJ_NAME + "/" 
 			RESULT_FOLDER	= TRAJ_FOLDER + "RESULTS/"
