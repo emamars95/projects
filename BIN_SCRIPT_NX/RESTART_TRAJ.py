@@ -22,12 +22,16 @@ PARAMETER_FILE_NAME     = str(sys.argv[1])
 nmstates, nstates	                = TRAJECTORY_MODULES.COUNTING_STATES(STATE_LIST)
 # Compute the time at which the dynamics is not anymore valid, i.e. crossing between S0 and S1		#
 TIMEBREAK, BREAKREASON, INIT_ENERGY	= TRAJECTORY_MODULES.TRAJECTORY_BREAK_NX("en.dat", nmstates, TIMESTEP)
-print (f"{PARAM_FILE.bcolors.OKCYAN} Dynamics stopped at %5.2f due %s{PARAM_FILE.bcolors.ENDC}" %(TIMEBREAK, BREAKREASON) )
+print (f"{PARAM_FILE.bcolors.OKCYAN} Dynamics stopped at {TIMEBREAK:5.2f} due {BREAKREASON}{PARAM_FILE.bcolors.ENDC}")
 # Refine the time at which the dynamics has to be restarted looking at the d1 before the crossing	#
 if BREAKREASON: TIMEBREAK = TIMEBREAK - TIMESTEP
 CORRECT_TIME, D1 = NX_MODULES.GET_TIME_BASED_ON_D1_REVERSED(PWD, TIMEBREAK - 15, TIMEBREAK)
-#CORRECT_TIME	 = CORRECT_TIME - 30
-print (f"{PARAM_FILE.bcolors.OKCYAN} Chosen time at %5.2f with D1 %5.3f{PARAM_FILE.bcolors.ENDC}" %(CORRECT_TIME, D1))
+print (f"{PARAM_FILE.bcolors.OKCYAN} Chosen time at {CORRECT_TIME:5.2f} with D1 {D1:5.3f}{PARAM_FILE.bcolors.ENDC}")
+
+CORRECT_TIME    = TIMEBREAK
+print (f"{PARAM_FILE.bcolors.OKCYAN} Chosen time at {CORRECT_TIME:5.2f}{PARAM_FILE.bcolors.ENDC}")
+##CORRECT_TIME, D1 = NX_MODULES.GET_TIME_BASED_ON_D1(PWD, 0, TIMEBREAK)
+##CORRECT_TIME	 = CORRECT_TIME - 30
 
 # We prepare the folder where the dynamics will be restarted
 def PREPARE_FOLDER_TO_RESTART_SHARC(FOLDER_RESTART):

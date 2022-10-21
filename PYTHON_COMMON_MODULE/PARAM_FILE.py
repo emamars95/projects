@@ -46,9 +46,14 @@ qy_file			= "QY.dat"
 
 viridis     		= ['#440154', '#472c7a' ,'#3b518b', '#2c718e', '#21908d', '#27ad81', '#5cc863','#aadc32', '#fde725']    # Viridis palette
 class BH3NH3:
-	molecule	= "BH3NH3"
-	reactivity	= ["BHDISSBHDISS"	, "NHDISSBHDISS"	, "BHDISS"        	, "NHDISS"  	, "BNDISS"	]
-	duplicate	= [1			, 1			, 0			, 1		, 1		]	
-	labels		= ["2 x B-H diss"	, "B-H + N-H diss"	, ""			, "N-H diss"	, "B-N diss"	]
-	natoms		= 8
+    # Name of the molecule
+    molecule	= "BH3NH3"
+    # Reactivity of the molecule
+    reactivity	= ["BHDISSBHDISS"	, "NHDISSBHDISS"	, "BHDISS"        	, "NHDISS"  	, "BNDISS"	]
+    # Type of distinct (expected) reaction channel. Here BHdiss is expected to give the same result as NHdissBHdiss
+    duplicate	= [1    		, 1			, 0		        , 1		, 1		]	
+    # Label assigned to each reaction channel 
+    labels	= ["2 x B-H diss"	, "B-H + N-H diss"	, ""			, "N-H diss"	, "B-N diss"	]
+    # Number or atoms
+    natoms	= 8
 	
