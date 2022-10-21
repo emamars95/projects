@@ -6,8 +6,6 @@ import glob
 import sys
 import subprocess
 
-sys.path.append('/ddn/home/fzzq22/CODE_AND_SCRIPT/PYTHON_COMMON_MODULE')
-
 from NX_MODULES 	import GET_EXCITATION_ENERGY, SUBMIT_TRAJECTORIES, LABEL_TRAJ, GET_TIME_BASED_ON_D1
 from TOOLS      	import sorted_nicely, GET_DATA
 from TRAJECTORY_MODULES import GET_MOLECULE_LABEL, READING_PARAMETER_FILE
@@ -98,9 +96,9 @@ def CHECK_REACTIVITY_BH3NH3(RESULT_FOLDER, SUMMARY_STRING, DATA_STRING):
 	return SUMMARY_STRING, DATA_STRING
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
-def CHECK_RESTARTED_DYNAMICS_BH3NH3(RESTART_FOLDER_NAME, "", ""):
+def CHECK_RESTARTED_DYNAMICS_BH3NH3(RESTART_FOLDER_NAME, '', ''):
     METHOD_USED, TIME_RESTART       = os.path.basename(os.path.normpath(RESTART_FOLDER_NAME)).split("_")[0], float(os.path.basename(os.path.normpath(RESTART_FOLDER_NAME)).split("_")[1])
-    CHECK_REACTIVITY_BH3NH3         
+    CHECK_REACTIVITY_BH3NH3(os.path.normpath(RESTART_FOLDER_NAME) )         
 return SUMMARY_STRING
 
 
@@ -221,9 +219,9 @@ def main():
 
 		ALLNAME	= sorted_nicely(glob.glob("TRAJ*"))
 
-		SUMMARY_FILE 	= open( PARAM_FILE.summury_file  , "w")
-		DATA_FILE	= open( PARAM_FILE.traj_file, "w")
-            D
+		SUMMARY_FILE 	= open( PARAM_FILE.summury_file  , 'w')
+		DATA_FILE	= open( PARAM_FILE.traj_file, 'w')
+        DATA_FILE_RESTART = open( PARAM_FILE.traj_file_restart, 'w')
 		
 		for TRAJ_NAME in ALLNAME:
 			TRAJ_FOLDER	= PWD + "/" + TRAJ_NAME + "/" 

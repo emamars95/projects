@@ -42,6 +42,7 @@ input_for_traj		= "INPUT_plot_traj.in"
 input_for_zoom		= "INPUT_plot_zoom.in"
 # File for analysis of QY
 qy_file			= "QY.dat"
+qy_file_restart         = "QY_restart.dat"
 # ------------------------------------------------------------------------------------- #
 
 viridis     		= ['#440154', '#472c7a' ,'#3b518b', '#2c718e', '#21908d', '#27ad81', '#5cc863','#aadc32', '#fde725']    # Viridis palette

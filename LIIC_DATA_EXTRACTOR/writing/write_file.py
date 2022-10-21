@@ -1,5 +1,12 @@
 #!/usr/local/Cluster-Apps/python/3.6.8/bin/python3.6
 
+# printing with dictionary
+# new_way = '%(key)-10s = %(value).2f' % {
+# 'key': key, 'value': value} # Original
+# template = '%(name)s loves food. See %(name)s cook.'
+# after = template % {'name': name} # Dictionary
+#
+
 import config
 
 # ---------------------------------------------------------------------------------------------------------- #
