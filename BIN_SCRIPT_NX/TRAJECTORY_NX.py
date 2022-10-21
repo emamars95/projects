@@ -1,4 +1,4 @@
-#!/usr/local/Cluster-Apps/python/3.6.8/bin/python3.6
+#!/usr/bin/env python3
 
 import os
 from os.path import isfile
@@ -124,7 +124,7 @@ def CHECK_REACTIVITY(RESULT_FOLDER, TIME_TRAJ_IS, SUMMARY_STRING, DATA_STRING):
         elif WHICH_MOLECULE == "OXALYL_fluoride":
                 SUMMARY_STRING, DATA_STRING     = CHECK_REACTIVITY_NRMECI(RESULT_FOLDER, SUMMARY_STRING, DATA_STRING)
         elif WHICH_MOLECULE == "BH3NH3":
-                TIME_D1,        D1              = GET_TIME_BASED_ON_D1(TIME_TRAJ_IS, RESULT_FOLDER, MIN_TIME=0, MAX_TIME=TIME_TRAJ_IS)
+                TIME_D1,        D1              = GET_TIME_BASED_ON_D1(RESULT_FOLDER, MIN_TIME=0, MAX_TIME=TIME_TRAJ_IS)
                 TAIL_COORDINATES_FILE(RESULT_FOLDER, TIME_D1 / 0.5 + 2)                 # 1 is the title 1 is time =0
                 SUMMARY_STRING                  += "\tD1 %5.4f at TIME %5.1f fs" %(D1, TIME_D1)
                 SUMMARY_STRING, DATA_STRING     = CHECK_REACTIVITY_BH3NH3(RESULT_FOLDER, SUMMARY_STRING, DATA_STRING)
@@ -166,7 +166,8 @@ def CHECK_TRAJECOTRY(TRAJ_NAME, TRAJ_FOLDER, RESULT_FOLDER):
 		except:	pass
 	        # IF THERE IS AN ERROR IN A TRAJECOTRY NOT ALREADY CHECKED
 		if ERROR_SIGNAL:
-			SUMMARY_STRING  += "*  ::ERROR::  *\t"		
+			SUMMARY_STRING  += "*  ::ERROR::  *\t"
+			DATA_STRING     += "ERROR"
 		# JUST FINISHED TRAJECTORY! IT HAS TO BE PLOTTED AND ANALYZED
 		elif STOP_SIGNAL:									# If the dynamics is just finished!
 			print(TRAJ_NAME + "\t is just finished. It will be fully analyzed automatically.\n")
@@ -197,10 +198,10 @@ def main():
 			# If the user want to label trajectories then we ask the the variable to compute the probability: wanted_traj/total_traj
 			# Higher is this probability (0 < p < 1) higher is the proportion sumitted vs not submitted
 			if labeling.upper() == "Y":
-				default_traj	= 50 
+				default_traj	= 10 
 				wanted_traj	= input("How many trajectory you want? (%5.0f default) " %(default_traj) )
-				if not wanted_traj: wanted_traj = 50		# Default value
-				default_traj 	= 56+393+437+471+445+273+179+75+24+7+3+1
+				if not wanted_traj: wanted_traj = 10		# Default value
+				default_traj 	= 20+1
 				total_traj	= input("How many trajectory in total? (%5.0f default) " %(default_traj) )
 				if not total_traj:  total_traj  = default_traj		
 				print ("Number of traj requested: " + str(wanted_traj) + " and number of total trajectories: " + str(total_traj))
