@@ -9,10 +9,10 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-ev_au_conv		= 27.211324570273
+ev_au_conv = 27.211324570273
 
-#thresh_d1		= 0.075
-thresh_d1              	= 0.05
+#thresh_d1 = 0.075
+thresh_d1 = 0.05
 
 # ------------------------------------------------------------------------------------- #
 # This section contain general folder definition 
@@ -20,32 +20,34 @@ thresh_d1              	= 0.05
 # ------------------------------------------------------------------------------------- #
 
 
-plot_traj_script	= "PLOT_TRAJ.py"
+plot_traj_script = "PLOT_TRAJ.py"
 # -------------------------------------------------------------------------------------	#
 # This section contain common files definition within the script suite
 # Turbomole file containing the d1 diagnostic from dynamics or LIIC
-d1_file                 = "d1_values"
+d1_file = "d1_values"
 # PLOT_TRAJ.py generate this name
-gnuplot_file_traj	= "gnuscript_traj.gp"
+gnuplot_file_traj = "gnuscript_traj.gp"
 # These three file are created for trajectories analysis
-to_submit_file		= "TO_SUBMIT"
-dont_analyze_file	= "DONT_ANALYZE"
-error_dyn		= "ERROR"
+to_submit_file = "TO_SUBMIT"
+dont_analyze_file = "DONT_ANALYZE"
+error_dyn = "ERROR"
 # These two file are for analysis of dynamics
-summury_file		= "summary.out"
-traj_file		= "Trajectory.dat"
+summury_file = "summary.out"
+traj_file = "Trajectory.dat"
+traj_file_restart = "trajectory_restart.dat"
 # These files contains the trajectories in curvilinear coordinates
-coordinate_file		= "COORDINATES.out"
-coordinate_file_to_use	= "COORDINATES_to_use.out"
+coordinate_file	= "COORDINATES.out"
+coordinate_file_to_use = "COORDINATES_to_use.out"
 # General parameter imputs for scripts
-input_for_traj		= "INPUT_plot_traj.in"
-input_for_zoom		= "INPUT_plot_zoom.in"
+input_for_traj = "INPUT_plot_traj.in"
+input_for_zoom = "INPUT_plot_zoom.in"
 # File for analysis of QY
-qy_file			= "QY.dat"
-qy_file_restart         = "QY_restart.dat"
+qy_file	= "QY.dat"
+qy_file_restart = "QY_restart.dat"
 # ------------------------------------------------------------------------------------- #
 
-viridis     		= ['#440154', '#472c7a' ,'#3b518b', '#2c718e', '#21908d', '#27ad81', '#5cc863','#aadc32', '#fde725']    # Viridis palette
+viridis = ['#440154', '#472c7a' ,'#3b518b', '#2c718e', '#21908d', '#27ad81', '#5cc863','#aadc32', '#fde725']    # Viridis palette
+
 class BH3NH3:
     # Name of the molecule
     molecule	= "BH3NH3"
