@@ -125,7 +125,7 @@ def CHECK_REACTIVITY(result_folder, time_traj, summary, data, data_restart):
         elif which_molecule == "OXALYL_fluoride":
                 summary, data = CHECK_REACTIVITY_NRMECI(result_folder, summary, data)
         elif which_molecule == "BH3NH3":
-                time_d1, d1 = GET_TIME_BASED_ON_D1(result_folder, min_time=0, max_time=time_traj)
+                time_d1, d1 = GET_TIME_BASED_ON_D1(result_folder, 0, time_traj)
                 TAIL_COORDINATES_FILE(result_folder, time_d1 / 0.5 + 2)                 # 1 is the title 1 is time =0
                 summary += f"\tD1 {d1:5.4f} at TIME {time_d1:5.1f} fs"
                 summary, data = CHECK_REACTIVITY_BH3NH3(result_folder, summary, data)
@@ -251,12 +251,14 @@ def main():
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 if __name__ == '__main__':
+    print ('\n')
     print (hline)
     print (" This script allows you to submit the dynamics in NX or to check   ")
     print (" the evolution of the trajectories. The program will automatically ")
     print (" plots and summary of the dynamics                                 ")
+    print ('\n')
     print (hline)
-    print ("\n\n")
+    print ("\n")
     main() 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#          
