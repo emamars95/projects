@@ -127,11 +127,12 @@ def CHECK_REACTIVITY(result_folder, time_traj, summary, data, data_restart):
                 summary, data = CHECK_REACTIVITY_NRMECI(result_folder, summary, data)
         elif which_molecule == "BH3NH3":
                 time_d1, d1 = GET_TIME_BASED_ON_D1(result_folder, 0, time_traj)
-                TAIL_COORDINATES_FILE(result_folder, int(time_d1 / 0.5 + 2))                 # 1 is the title 1 is time =0
+                TAIL_COORDINATES_FILE(result_folder, int(time_d1 / 0.5 + 2))                # 1 is the title 1 is time =0
                 summary += f"\tD1 {d1:5.4f} at TIME {time_d1:5.1f} fs"
                 summary, data = CHECK_REACTIVITY_BH3NH3(result_folder, summary, data)
-                restart_folder = glob.glob(result_folder + "../*UMP2*")[0]                  # Name in which the trajectory was restarted for HPP
-                data_restart += CHECK_RESTARTED_DYNAMICS_BH3NH3(restart_folder, summary)
+                restart_folder = glob.glob(result_folder + "../*UMP2*")                     # Name in which the trajectory was restarted for HPP
+                if restart_folder:
+                    data_restart += CHECK_RESTARTED_DYNAMICS_BH3NH3(restart_folder, summary)
         else: 
             raise ValueError (f'Value not recognized in {template_geo}')
         return summary, data, data_restart
