@@ -132,7 +132,7 @@ def CHECK_REACTIVITY(result_folder, time_traj, summary, data, data_restart):
                 summary, data = CHECK_REACTIVITY_BH3NH3(result_folder, summary, data)
                 restart_folder = glob.glob(result_folder + "../*UMP2*")                     # Name in which the trajectory was restarted for HPP
                 if restart_folder:
-                    data_restart += CHECK_RESTARTED_DYNAMICS_BH3NH3(restart_folder, summary)
+                    data_restart += CHECK_RESTARTED_DYNAMICS_BH3NH3(restart_folder[0], summary)
         else: 
             raise ValueError (f'Value not recognized in {template_geo}')
         return summary, data, data_restart
