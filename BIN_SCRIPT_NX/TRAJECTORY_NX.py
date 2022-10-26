@@ -139,7 +139,7 @@ def PLOT_TRAJ_FINISHED(traj_name, result_folder, time_traj):
         COPY_FILE(traj_name, result_folder, PARAM_FILE.input_for_zoom, time_traj)
         os.system(f"{PARAM_FILE.plot_traj_script} {PARAM_FILE.input_for_zoom} &>/dev/null")     # RUN our script to generate the trajectory of the last part of the dynamics.
     os.system(f'touch {result_folder}/{PARAM_FILE.dont_analyze_file}')              # We write the file to not analyze the folder again
-     os.chdir(PWD)
+    os.chdir(PWD)
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder):
