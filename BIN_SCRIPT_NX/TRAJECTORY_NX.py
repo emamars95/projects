@@ -94,7 +94,7 @@ def TAIL_COORDINATES_FILE(result_folder, line):
     os.system(f"head -{line} {coord_file} > {coord_file_to_use}")
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
-def CHECK_REACTIVITY(result_folder, time_traj, summary, data, data_restart):
+def CHECK_REACTIVITY(traj_name, result_folder, time_traj, summary, data, data_restart):
         # Here we have to check at which molecule we are dealing with. Depending on the molecule the geometrical coordinates can be     #
         # different and therefore, we have to adopt different procedure.                                                                #
         *binx, template_geo = READING_PARAMETER_FILE("%s/%s" %(result_folder, PARAM_FILE.input_for_traj))
@@ -122,13 +122,15 @@ def CHECK_REACTIVITY(result_folder, time_traj, summary, data, data_restart):
                 restart_folder = glob.glob(result_folder + "../*UMP2*")                     # Name in which the trajectory was restarted for HPP
                 if restart_folder:
                     coordinate_file = restart_folder[0] + '/RESULTS/' + PARAM_FILE.coordinate_file
+                    if not coordinate_file:
+                        PLOT_TRAJ_FINISHED(traj_name, restart_folder, time_traj)
                     *binx, data_restart = CHECK_REACTIVITY_BH3NH3(coordinate_file, summary, data_restart)
         else: 
             raise ValueError (f'Value not recognized in {template_geo}')
         return summary, data, data_restart
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
-def PLOT_TRAJ_FINISHED(traj_name, result_folder, traj_folder, time_traj):
+def PLOT_TRAJ_FINISHED(traj_name, result_folder, time_traj):
     print(f'{traj_name}\t is just finished. It will be fully analyzed automatically.\n')
     os.chdir(result_folder)
     COPY_FILE(traj_name, result_folder, PARAM_FILE.input_for_traj, time_traj)       # We modify the two file changing name of the trajectories and the time
@@ -136,11 +138,8 @@ def PLOT_TRAJ_FINISHED(traj_name, result_folder, traj_folder, time_traj):
     if time_traj > 100:
         COPY_FILE(traj_name, result_folder, PARAM_FILE.input_for_zoom, time_traj)
         os.system(f"{PARAM_FILE.plot_traj_script} {PARAM_FILE.input_for_zoom} &>/dev/null")     # RUN our script to generate the trajectory of the last part of the dynamics.
-    
     os.system(f'touch {result_folder}/{PARAM_FILE.dont_analyze_file}')              # We write the file to not analyze the folder again
-    summary += f"* JUST FINISHED *\t{float(time_traj):8.2f} fs"      
-    os.system('grep "d1 diagnostic for MP2:" ' + traj_folder + '/moldyn.log | awk \'{printf "%9.2f\\t%s\\n", counter/2, $5; counter++}\' > d1_values')
-
+    
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder):
     # The two string are initialized with the name of the trajectory.
@@ -162,7 +161,7 @@ def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder):
             summary += "\t ENERGY DISCONTINUITY"
             data += "ENERGY_DISCONTINUITY"
         else: 
-            summary, data, data_restart = CHECK_REACTIVITY(result_folder, time_traj, summary, data, data_restart)
+            summary, data, data_restart = CHECK_REACTIVITY(traj_name, result_folder, time_traj, summary, data, data_restart)
 
 # This section is dedicated in case the file DONT_ANALYZE is NOT found in the result folder. In this cases the dynamics is not stopped yet    #
 # or at least it is just finished. In this last case, the file DONT_ANALYZE will be created, warning that is not necessary to analyze         #
@@ -182,7 +181,9 @@ def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder):
             data     += "ERROR"
         # JUST FINISHED TRAJECTORY! IT HAS TO BE PLOTTED AND ANALYZED
         elif STOP_SIGNAL:                                    # If the dynamics is just finished!
-            PLOT_TRAJ_FINISHED(traj_name, result_folder, traj_folder, time_traj)
+            PLOT_TRAJ_FINISHED(traj_name, result_folder, time_traj)
+            summary += f"* JUST FINISHED *\t{float(time_traj):8.2f} fs"      
+            os.system('grep "d1 diagnostic for MP2:" ' + traj_folder + '/moldyn.log | awk \'{printf "%9.2f\\t%s\\n", counter/2, $5; counter++}\' > d1_values')
         # STILL RUNNING.
         else:                                        # Otherwise the dynamics is still running
             summary  += "   RUNNING   \t%8.2f fs"                %(float(time_traj))
@@ -220,7 +221,7 @@ def CHECK_DYNAMICS():
 def SUBMIT_DYNAMICS():
     if not isfile(PARAM_FILE.to_submit_file):                    # If this file does not exist we ask if they want label the trajectory to submit
         # Labeling means to chose a subgroup of trajectory to submit based on random number generator
-        labeling = input("Do you want label the trajectory to submit ? (Y or N)            ")
+        labeling = input("Do you want label the trajectory to submit ? (Y)              ")
         # If the user want to label trajectories then we ask the the variable to compute the probability: wanted_traj/total_traj
         # Higher is this probability (0 < p < 1) higher is the proportion sumitted vs not submitted
         if labeling.upper() == "Y":
