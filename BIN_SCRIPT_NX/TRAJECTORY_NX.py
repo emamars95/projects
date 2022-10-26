@@ -122,6 +122,7 @@ def CHECK_REACTIVITY(traj_name, result_folder, time_traj, summary, data, data_re
                 restart_folder = glob.glob(result_folder + "../*UMP2*")                     # Name in which the trajectory was restarted for HPP
                 if restart_folder:
                     coordinate_file = restart_folder[0] + '/RESULTS/' + PARAM_FILE.coordinate_file
+                    print(f'{restart_folder} {coordinate_file}')
                     if isfile(coordinate_file):
                         PLOT_TRAJ_FINISHED(traj_name, restart_folder, time_traj)
                     *binx, data_restart = CHECK_REACTIVITY_BH3NH3(coordinate_file, summary, data_restart)
@@ -132,7 +133,6 @@ def CHECK_REACTIVITY(traj_name, result_folder, time_traj, summary, data, data_re
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def PLOT_TRAJ_FINISHED(traj_name, result_folder, time_traj):
     print(f'{traj_name}\t is just finished. It will be fully analyzed automatically.\n')
-    print(f'{result_folder}')
     os.chdir(result_folder)
     COPY_FILE(traj_name, result_folder, PARAM_FILE.input_for_traj, time_traj)       # We modify the two file changing name of the trajectories and the time
     os.system(f"{PARAM_FILE.plot_traj_script} {PARAM_FILE.input_for_traj}")         # RUN our script to generate trajectory plots.
