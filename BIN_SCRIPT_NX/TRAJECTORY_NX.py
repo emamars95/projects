@@ -122,7 +122,7 @@ def CHECK_REACTIVITY(traj_name, result_folder, time_traj, summary, data, data_re
                 restart_folder = glob.glob(result_folder + "../*UMP2*")                     # Name in which the trajectory was restarted for HPP
                 if restart_folder:
                     coordinate_file = restart_folder[0] + '/RESULTS/' + PARAM_FILE.coordinate_file
-                    if not coordinate_file:
+                    if isfile(coordinate_file):
                         PLOT_TRAJ_FINISHED(traj_name, restart_folder, time_traj)
                     *binx, data_restart = CHECK_REACTIVITY_BH3NH3(coordinate_file, summary, data_restart)
         else: 
@@ -139,7 +139,8 @@ def PLOT_TRAJ_FINISHED(traj_name, result_folder, time_traj):
         COPY_FILE(traj_name, result_folder, PARAM_FILE.input_for_zoom, time_traj)
         os.system(f"{PARAM_FILE.plot_traj_script} {PARAM_FILE.input_for_zoom} &>/dev/null")     # RUN our script to generate the trajectory of the last part of the dynamics.
     os.system(f'touch {result_folder}/{PARAM_FILE.dont_analyze_file}')              # We write the file to not analyze the folder again
-    
+     os.chdir(PWD)
+
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder):
     # The two string are initialized with the name of the trajectory.
