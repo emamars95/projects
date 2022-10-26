@@ -132,6 +132,7 @@ def CHECK_REACTIVITY(traj_name, result_folder, time_traj, summary, data, data_re
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def PLOT_TRAJ_FINISHED(traj_name, result_folder, time_traj):
     print(f'{traj_name}\t is just finished. It will be fully analyzed automatically.\n')
+    print(f'{result_folder}')
     os.chdir(result_folder)
     COPY_FILE(traj_name, result_folder, PARAM_FILE.input_for_traj, time_traj)       # We modify the two file changing name of the trajectories and the time
     os.system(f"{PARAM_FILE.plot_traj_script} {PARAM_FILE.input_for_traj}")         # RUN our script to generate trajectory plots.
