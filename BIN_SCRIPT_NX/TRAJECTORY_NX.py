@@ -104,7 +104,6 @@ def CHECK_RESTARTED_DYNAMICS_BH3NH3(restart_folder, summary):
 def TAIL_COORDINATES_FILE(result_folder, line):
     coord_file = result_folder + "/" + PARAM_FILE.coordinate_file
     coord_file_to_use = result_folder + "/" + PARAM_FILE.coordinate_file_to_use
-    print(f"head -{line} {coord_file} > {coord_file_to_use}")
     os.system(f"head -{line} {coord_file} > {coord_file_to_use}")
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -128,7 +127,7 @@ def CHECK_REACTIVITY(result_folder, time_traj, summary, data, data_restart):
                 summary, data = CHECK_REACTIVITY_NRMECI(result_folder, summary, data)
         elif which_molecule == "BH3NH3":
                 time_d1, d1 = GET_TIME_BASED_ON_D1(result_folder, 0, time_traj)
-                TAIL_COORDINATES_FILE(result_folder, time_d1 / 0.5 + 2)                 # 1 is the title 1 is time =0
+                TAIL_COORDINATES_FILE(result_folder, int(time_d1 / 0.5 + 2))                 # 1 is the title 1 is time =0
                 summary += f"\tD1 {d1:5.4f} at TIME {time_d1:5.1f} fs"
                 summary, data = CHECK_REACTIVITY_BH3NH3(result_folder, summary, data)
                 restart_folder = glob.glob(result_folder + "../*UMP2*")[0]                  # Name in which the trajectory was restarted for HPP
