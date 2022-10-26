@@ -122,9 +122,8 @@ def CHECK_REACTIVITY(traj_name, result_folder, time_traj, summary, data, data_re
                 restart_folder = glob.glob(result_folder + "../*UMP2*")                     # Name in which the trajectory was restarted for HPP
                 if restart_folder:
                     coordinate_file = restart_folder[0] + '/RESULTS/' + PARAM_FILE.coordinate_file
-                    print(f'{restart_folder} {coordinate_file}')
                     if isfile(coordinate_file):
-                        PLOT_TRAJ_FINISHED(traj_name, restart_folder, time_traj)
+                        PLOT_TRAJ_FINISHED(traj_name, restart_folder[0], time_traj)
                     *binx, data_restart = CHECK_REACTIVITY_BH3NH3(coordinate_file, summary, data_restart)
         else: 
             raise ValueError (f'Value not recognized in {template_geo}')
