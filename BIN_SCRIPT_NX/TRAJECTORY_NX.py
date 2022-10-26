@@ -3,6 +3,7 @@
 import os
 from os.path import isfile
 import glob
+from re import template
 import sys
 import subprocess
 
@@ -103,6 +104,7 @@ def CHECK_RESTARTED_DYNAMICS_BH3NH3(restart_folder, summary):
 def TAIL_COORDINATES_FILE(result_folder, line):
     coord_file = result_folder + "/" + PARAM_FILE.coordinate_file
     coord_file_to_use = result_folder + "/" + PARAM_FILE.coordinate_file_to_use
+    print(f"head -{line} {coord_file} > {coord_file_to_use}")
     os.system(f"head -{line} {coord_file} > {coord_file_to_use}")
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
