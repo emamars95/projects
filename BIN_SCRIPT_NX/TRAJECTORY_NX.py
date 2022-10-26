@@ -71,8 +71,7 @@ def CHECK_REACTIVITY_NRMECI(result_folder, summary, data):
     return summary, data
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
-def CHECK_REACTIVITY_BH3NH3(result_folder, summary, data):
-    coordinate_file        = result_folder + '/' + PARAM_FILE.coordinate_file_to_use
+def CHECK_REACTIVITY_BH3NH3(coordinate_file, summary, data):
     B_N_BOND             = GET_DATA(coordinate_file, 1)       # Collect B-N bond distance
     if float(B_N_BOND) > 2.0:                                               
         summary  += "\t> B-N DISS < (%3.3f)" %(B_N_BOND)
@@ -93,12 +92,6 @@ def CHECK_REACTIVITY_BH3NH3(result_folder, summary, data):
             summary  += "\t> B-H DISS < (%3.3f)" %(B_H_BOND)
             data     += "BHDISS"
     return summary, data
-
-#-----------------------------------------------------------------------------------------------------------------------------------------------------#
-def CHECK_RESTARTED_DYNAMICS_BH3NH3(restart_folder, summary):
-    method, time_restart = os.path.basename(os.path.normpath(restart_folder)).split("_")
-    summary, data_restart = CHECK_REACTIVITY_BH3NH3(restart_folder, '', '')       
-    return data_restart
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def TAIL_COORDINATES_FILE(result_folder, line):
@@ -127,12 +120,15 @@ def CHECK_REACTIVITY(result_folder, time_traj, summary, data, data_restart):
                 summary, data = CHECK_REACTIVITY_NRMECI(result_folder, summary, data)
         elif which_molecule == "BH3NH3":
                 time_d1, d1 = GET_TIME_BASED_ON_D1(result_folder, 0, time_traj)
-                TAIL_COORDINATES_FILE(result_folder, int(time_d1 / 0.5 + 2))                # 1 is the title 1 is time =0
+                TAIL_COORDINATES_FILE(result_folder, int(time_d1 / 0.5 + 2))                # 1 is the title 1 is time = 0
                 summary += f"\tD1 {d1:5.4f} at TIME {time_d1:5.1f} fs"
-                summary, data = CHECK_REACTIVITY_BH3NH3(result_folder, summary, data)
+                coordinate_file = result_folder + '/' + PARAM_FILE.coordinate_file_to_use
+                summary, data = CHECK_REACTIVITY_BH3NH3(coordinate_file, summary, data)
+
                 restart_folder = glob.glob(result_folder + "../*UMP2*")                     # Name in which the trajectory was restarted for HPP
                 if restart_folder:
-                    data_restart += CHECK_RESTARTED_DYNAMICS_BH3NH3(restart_folder[0], summary)
+                    coordinate_file = restart_folder[0] + + '/' + PARAM_FILE.coordinate_file
+                    *binx, data_restart += CHECK_REACTIVITY_BH3NH3(coordinate_file, summary, data)
         else: 
             raise ValueError (f'Value not recognized in {template_geo}')
         return summary, data, data_restart
