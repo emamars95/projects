@@ -191,7 +191,7 @@ def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder):
         else:                                        # Otherwise the dynamics is still running
             summary  += "   RUNNING   \t%8.2f fs"                %(float(time_traj))
             data     += "RUNNING"    
-    return summary, data
+    return summary, data, data_restart
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def CHECK_DYNAMICS():
