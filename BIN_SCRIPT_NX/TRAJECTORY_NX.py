@@ -86,14 +86,6 @@ def CHECK_REACTIVITY_BH3NH3(coordinate_file, summary, data):
             summary  += "\t> B-H DISS < (%3.3f)" %(B_H_BOND)
             data     += "BHDISS"
     return summary, data
-#-----------------------------------------------------------------------------------------------------------------------------------------------------#
-def CHECK_RESTART(restart_folder, summary, data_restart):
-    if restart_folder:
-        coordinate_file = restart_folder[0] + '/RESULTS/' + PARAM_FILE.coordinate_file
-        if coordinate_file:
-            *binx, data_restart = CHECK_REACTIVITY_BH3NH3(coordinate_file, summary, data_restart)
-        else:
-
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def TAIL_COORDINATES_FILE(result_folder, line):
@@ -135,6 +127,7 @@ def CHECK_REACTIVITY(result_folder, time_traj, summary, data, data_restart):
             raise ValueError (f'Value not recognized in {template_geo}')
         return summary, data, data_restart
 
+#-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def PLOT_TRAJ_FINISHED(traj_name, result_folder, traj_folder, time_traj):
     print(f'{traj_name}\t is just finished. It will be fully analyzed automatically.\n')
     os.chdir(result_folder)
