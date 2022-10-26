@@ -123,6 +123,7 @@ def CHECK_REACTIVITY(traj_name, result_folder, time_traj, summary, data, data_re
                 if restart_folder:
                     result_folder = restart_folder[0] + '/RESULTS/'
                     coordinate_file = result_folder + PARAM_FILE.coordinate_file
+                    print(coordinate_file)
                     if isfile(coordinate_file):
                         PLOT_TRAJ_FINISHED(traj_name, result_folder, time_traj, PARAM_FILE.BH3NH3.restart_template)
                     *binx, data_restart = CHECK_REACTIVITY_BH3NH3(coordinate_file, summary, data_restart)
