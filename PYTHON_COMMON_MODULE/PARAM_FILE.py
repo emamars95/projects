@@ -59,4 +59,6 @@ class BH3NH3:
     labels	= ["2 x B-H diss"	, "B-H + N-H diss"	, ""			, "N-H diss"	, "B-N diss"	]
     # Number or atoms
     natoms	= 8
+    # Restart Folder Template
+    restart_template = "/ddn/home/fzzq22/CODE_AND_SCRIPT/TEMPLATE_RESTARTs/NX_UMP2"
 	
