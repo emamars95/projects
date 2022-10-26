@@ -17,17 +17,11 @@ hline = "*****************************************************************\n"
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def COPY_FILE(traj_name, result_folder, file_to_copy, time_traj):
-    os.system("cp " + PWD + "/" + file_to_copy + "  " + result_folder)                # Copy INPUT file for PLOT_TRAJ.py
-    os.system("sed -i 's/traj1/" + traj_name + "/' "  + result_folder + file_to_copy)        # We update the INPUT files with
+    os.system(f"cp {PWD}/{file_to_copy} result_folder")                                      # Copy INPUT file for PLOT_TRAJ.py
+    os.system(f"sed -i 's/traj1/{traj_name}/' {result_folder}/{file_to_copy}")               # We update the INPUT files with
     if "zoom" in file_to_copy:                                    # If it is the zoom INPUT we also modify the maxxrange and
-# the minxrange. They will be maxxrange = time_traj and minxrange = time_traj - 100.0 to have a very nice plots. 
-        if time_traj < 100:
-            timemin    = 0.0
-        else:
-            timemin = time_traj - 100.0    
-        os.system("sed -i '3s/0/" + str(timemin)      + "/' " + result_folder + file_to_copy)    # We update the INPUT files with minxrange.
-        os.system("sed -i '4s/0/" + str(time_traj) + "/' " + result_folder + file_to_copy)   # We update the INPUT files with maxxrange.
-    return
+        os.system(f"sed -i '3s/0/{str(time_traj- 100)}/' {result_folder}/{file_to_copy}")    # We update the INPUT files with minxrange.
+        os.system(f"sed -i '4s/0/{str(time_traj)}/'      {result_folder}/{file_to_copy}")    # We update the INPUT files with maxxrange.
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def CHECK_RESTARTED_DYNAMICS_HPP(restart_folder, summary):
@@ -92,6 +86,14 @@ def CHECK_REACTIVITY_BH3NH3(coordinate_file, summary, data):
             summary  += "\t> B-H DISS < (%3.3f)" %(B_H_BOND)
             data     += "BHDISS"
     return summary, data
+#-----------------------------------------------------------------------------------------------------------------------------------------------------#
+def CHECK_RESTART(restart_folder, summary, data_restart):
+    if restart_folder:
+        coordinate_file = restart_folder[0] + '/RESULTS/' + PARAM_FILE.coordinate_file
+        if coordinate_file:
+            *binx, data_restart = CHECK_REACTIVITY_BH3NH3(coordinate_file, summary, data_restart)
+        else:
+
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def TAIL_COORDINATES_FILE(result_folder, line):
@@ -127,11 +129,24 @@ def CHECK_REACTIVITY(result_folder, time_traj, summary, data, data_restart):
 
                 restart_folder = glob.glob(result_folder + "../*UMP2*")                     # Name in which the trajectory was restarted for HPP
                 if restart_folder:
-                    coordinate_file = restart_folder[0] + '/' + PARAM_FILE.coordinate_file
+                    coordinate_file = restart_folder[0] + '/RESULTS/' + PARAM_FILE.coordinate_file
                     *binx, data_restart = CHECK_REACTIVITY_BH3NH3(coordinate_file, summary, data_restart)
         else: 
             raise ValueError (f'Value not recognized in {template_geo}')
         return summary, data, data_restart
+
+def PLOT_TRAJ_FINISHED(traj_name, result_folder, traj_folder, time_traj):
+    print(f'{traj_name}\t is just finished. It will be fully analyzed automatically.\n')
+    os.chdir(result_folder)
+    COPY_FILE(traj_name, result_folder, PARAM_FILE.input_for_traj, time_traj)       # We modify the two file changing name of the trajectories and the time
+    os.system(f"{PARAM_FILE.plot_traj_script} {PARAM_FILE.input_for_traj}")         # RUN our script to generate trajectory plots.
+    if time_traj > 100:
+        COPY_FILE(traj_name, result_folder, PARAM_FILE.input_for_zoom, time_traj)
+        os.system(f"{PARAM_FILE.plot_traj_script} {PARAM_FILE.input_for_zoom} &>/dev/null")     # RUN our script to generate the trajectory of the last part of the dynamics.
+    
+    os.system(f'touch {result_folder}/{PARAM_FILE.dont_analyze_file}')              # We write the file to not analyze the folder again
+    summary += f"* JUST FINISHED *\t{float(time_traj):8.2f} fs"      
+    os.system('grep "d1 diagnostic for MP2:" ' + traj_folder + '/moldyn.log | awk \'{printf "%9.2f\\t%s\\n", counter/2, $5; counter++}\' > d1_values')
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder):
@@ -174,15 +189,7 @@ def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder):
             data     += "ERROR"
         # JUST FINISHED TRAJECTORY! IT HAS TO BE PLOTTED AND ANALYZED
         elif STOP_SIGNAL:                                    # If the dynamics is just finished!
-            print(traj_name + "\t is just finished. It will be fully analyzed automatically.\n")
-            COPY_FILE(traj_name, result_folder, PARAM_FILE.input_for_traj, time_traj)    # We modify the two file changing name of the trajectories and the time
-            COPY_FILE(traj_name, result_folder, PARAM_FILE.input_for_zoom, time_traj)
-            os.system("touch %s/%s" %(result_folder, PARAM_FILE.dont_analyze_file))        # We write the file to not analyze the folder again
-            summary    += "* JUST FINISHED *\t%8.2f fs"            %(float(time_traj))    
-            os.chdir(result_folder)                                # Enter in TRAJ*/RESULT FOLDER.
-            os.system("%s %s" %(PARAM_FILE.plot_traj_script, PARAM_FILE.input_for_traj))    # RUN our script to generate trajectory plots.
-            os.system("%s %s &>/dev/null" %(PARAM_FILE.plot_traj_script, PARAM_FILE.input_for_zoom))    # RUN our script to generate the trajectory of the last part of the dynamics.
-            os.system('grep "d1 diagnostic for MP2:" ' + traj_folder + '/moldyn.log | awk \'{printf "%9.2f\\t%s\\n", counter/2, $5; counter++}\' > d1_values')
+            PLOT_TRAJ_FINISHED(traj_name, result_folder, traj_folder, time_traj)
         # STILL RUNNING.
         else:                                        # Otherwise the dynamics is still running
             summary  += "   RUNNING   \t%8.2f fs"                %(float(time_traj))
