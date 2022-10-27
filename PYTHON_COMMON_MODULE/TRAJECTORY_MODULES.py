@@ -26,6 +26,7 @@ def READING_PARAMETER_FILE(parameter_file_name):
 	print(data)
 	dictionary = loads(data)
 	print(dictionary)
+	sys.exit()
 	return dictionary
 			
 #----------------------------------------------------------------------------------------------------------------------------#
