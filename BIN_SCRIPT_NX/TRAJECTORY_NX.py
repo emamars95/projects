@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import os
-from os.path                import isfile, isdir
+from os.path                import isfile
 import glob
 import subprocess
 
@@ -204,7 +204,7 @@ def ROUTINE_DYNAMICS(allname, summary_file, traj_file, folder):
     for traj_name in allname:
         traj_folder = f'{PWD}/{traj_name}/' 
         result_folder = glob.glob(traj_folder + folder)
-        if isdir(result_folder):                        # If some dynamics has been restarted then we check the dynamics output
+        if result_folder:
             print(traj_name)
             os.chdir(traj_folder)                 
             summary, data, data_restart = CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder[0])    
