@@ -27,7 +27,7 @@ def COPY_FILES(folder_restart, ref_path, file_list):
 		if isfile(file_to_copy): 
 			copy(file_to_copy, folder_restart)
 		else:
-			copytree(file_to_copy, folder_restart)
+			copytree(file_to_copy, folder_restart + file_name)
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def MOVE_FILES(folder_restart, file_list):
