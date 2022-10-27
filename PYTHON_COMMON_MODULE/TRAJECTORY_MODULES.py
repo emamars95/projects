@@ -34,12 +34,12 @@ def READING_PARAMETER_FILE(PARAMETER_FILE_NAME):
 		# A string idicate the coordinates that we want to print. They vary depends on the molecule we are studing.
 		INPUT_COORD             = PARAMETER_FILE.readline()
 		# The time step of the dynamics
-		TIMESTEP                = float(PARAMETER_FILE.readline())
+		timestep                = float(PARAMETER_FILE.readline())
 		template_geo            = PARAMETER_FILE.readline().rstrip()
 		if int( len(template_geo) ) == 0:
 			raise ValueError ('The parameter file lacks some records!')
 		return (CALCULATION, STATE_LIST, rangexmin, rangexmax, rangeymin, rangeymax, rangey2max,
-				 outname, INPUT_COORD, TIMESTEP, template_geo)
+				 outname, INPUT_COORD, timestep, template_geo)
 
 #----------------------------------------------------------------------------------------------------------------------------#
 def TOT_ENERGY_CHECK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY):
@@ -86,7 +86,7 @@ def CHECK_BREAK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY, warning, 
 	return tot_energy_step_1, tot_energy_step_2, warning, TIME, BREAKREASON, tobreak
 
 #----------------------------------------------------------------------------------------------------------------------------#
-def TRAJECTORY_BREAK_SH(EnergyFile, nmstates, TIMESTEP):
+def TRAJECTORY_BREAK_SH(EnergyFile, nmstates, timestep):
 	INIT_TOT_ENERGY         = 0.0;	tot_energy_step_1       = 0.0;	tot_energy_step_2       = 0.0; 	warning			= 0
 	with open(EnergyFile, "r") as fp:
 		for i, lisline in enumerate(fp):
@@ -104,7 +104,7 @@ def TRAJECTORY_BREAK_SH(EnergyFile, nmstates, TIMESTEP):
 	return TIME, BREAKREASON
 
 #----------------------------------------------------------------------------------------------------------------------------#
-def TRAJECTORY_BREAK_NX(EnergyFile, nmstates, TIMESTEP):
+def TRAJECTORY_BREAK_NX(EnergyFile, nmstates, timestep):
 	INIT_TOT_ENERGY		= 0.0; 	tot_energy_step_1	= 0.0;	tot_energy_step_2	= 0.0;  warning                 = 0
 	with open(EnergyFile,"r") as fp:
 		for i, lisline in enumerate(fp):
@@ -127,7 +127,7 @@ def TRAJECTORY_BREAK_NX(EnergyFile, nmstates, TIMESTEP):
 				(tot_energy_step_1, tot_energy_step_2, warning, TIME, BREAKREASON,
 					 tobreak) = CHECK_BREAK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY, warning, TIME, BREAKREASON)
 				if tobreak: break
-	return TIME, BREAKREASON, INIT_S0_ENERGY/27.2114
+	return TIME, BREAKREASON, INIT_S0_ENERGY/PARAM_FILE.ev_au_conv
 
 #----------------------------------------------------------------------------------------------------------------------------#
 def GET_MOLECULE_LABEL(template_geo):
@@ -154,26 +154,26 @@ def GET_MOLECULE_LABEL(template_geo):
 	return label, class_molecule
 
 #----------------------------------------------------------------------------------------------------------------------------#	
-def MAKE_GEOMETRICAL_COORDINATES(TIMESTEP, template_geo, label_MOLECULE):
+def MAKE_GEOMETRICAL_COORDINATES(timestep, template_geo, label_molecule):
     TMP_COORDINATES_FILE_NAME	= "COORDINATES.out"
     os.system("cp -f dyn.xyz output.xyz")						# Python script read the file output.xyz
     programgeo                  = '/nobackup/zcxn55/SOFTWARE/SHARC-2.1-corr-edc/bin/geo.py'
-    cmd = "python2 $SHARC/%s -t %5.2f < %s > %s" %(programgeo, TIMESTEP, template_geo, TMP_COORDINATES_FILE_NAME )
+    cmd = "python2 $SHARC/%s -t %5.2f < %s > %s" %(programgeo, timestep, template_geo, TMP_COORDINATES_FILE_NAME )
     os.system(cmd)								# The tmp coordinate file is created
 
-    if label_MOLECULE == "HPP" or label_MOLECULE == "HPAC":
+    if label_molecule == "HPP" or label_molecule == "HPAC":
         label		= "   time\t\tO-O\t\t\tO-H\t\t\tO--H\t\tC-C\t\t\tC=0\t\tC=O pyramid\t\tC-O\t\td 3 1 4 10\t\td 2 1 4 10\t\tC1--O11"
-    elif label_MOLECULE == "PYRONE":
+    elif label_molecule == "PYRONE":
         label           = "   time\t\tC=0"
-    elif label_MOLECULE == "FORMALDEHYDE":
+    elif label_molecule == "FORMALDEHYDE":
         label           = "   time\t\tC=0"
-    elif label_MOLECULE == "ACROLEIN":
+    elif label_molecule == "ACROLEIN":
         label           = "   time\t\tC=0"
-    elif label_MOLECULE == "BH3NH3":
+    elif label_molecule == "BH3NH3":
         label           = "   time\t\t\tB-N\t\t\tN-H\t\tN-H\t\t\tN-H\t\tB-H\t\t\tB-H\t\tB-H\t\tNH3 pyramid\t\tBH3 pyramid"
-    elif label_MOLECULE == "Pyridine":
+    elif label_molecule == "Pyridine":
         label           = "   time\t\t\tB-N\t\t\tB-H\t\t\tB-H\t\tB-H\t\tBH3 pyramid"
-    elif label_MOLECULE == "Nucleic_Acid":
+    elif label_molecule == "Nucleic_Acid":
         label           = "   time\t\tC-O\t\t\tC-C"
     os.system("sed -i '1d' %s" 		%(TMP_COORDINATES_FILE_NAME))
     os.system('sed -i "s/time.*/%s/g" ' %(TMP_COORDINATES_FILE_NAME))
@@ -354,18 +354,18 @@ def WRITE_SH_STATE_GP_RESTARTED_FROM_NX(STATE_LIST, colorS, TIME_RESTART, lislin
 	return GNUPLOT_STATE
 
 #----------------------------------------------------------------------------------------------------------------------------#
-def WRITE_COORDS_AND_BREAKLINE(rangeymax, rangey2max, positionlabel2, TIMEBREAK, BREAKREASON, INPUT_COORD, GNUPLOT_TIME_label, label_MOLECULE):
+def WRITE_COORDS_AND_BREAKLINE(rangeymax, rangey2max, positionlabel2, TIMEBREAK, BREAKREASON, INPUT_COORD, GNUPLOT_TIME_label, label_molecule):
 #Plot the second part with multipot
-	if 	label_MOLECULE == "HPP":
+	if 	label_molecule == "HPP":
 		GNUPLOT_COORD, y2label, index = WRITE_GEOMETRICAL_CORDINATES_HPP_GP(   INPUT_COORD, GNUPLOT_TIME_label)
-	elif 	label_MOLECULE == "BH3NH3":
+	elif 	label_molecule == "BH3NH3":
 		GNUPLOT_COORD, y2label, index = WRITE_GEOMETRICAL_CORDINATES_BH3NH3_GP(INPUT_COORD, GNUPLOT_TIME_label)
-	elif	label_MOLECULE == "Pyridine":
+	elif	label_molecule == "Pyridine":
 		GNUPLOT_COORD, y2label, index = WRITE_GEOMETRICAL_CORDINATES_Pyridine_GP(INPUT_COORD, GNUPLOT_TIME_label) 
-	elif 	label_MOLECULE == "Nucleic_Acid":
+	elif 	label_molecule == "Nucleic_Acid":
 		GNUPLOT_COORD, y2label, index = WRITE_GEOMETRICAL_CORDINATES_Nucleic_Acid_GP(INPUT_COORD, GNUPLOT_TIME_label)
 	else:
-		print ("\n * Not implemented for molecule * \n", label_MOLECULE)
+		print ("\n * Not implemented for molecule * \n", label_molecule)
 
 	GNUPLOT_FINAL  = ''
 	GNUPLOT_FINAL += '  unset key\n  unset ylabel\n  unset yrange\n  unset ytics\n'

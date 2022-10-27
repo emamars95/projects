@@ -55,11 +55,11 @@ def MAKE_GEOM_VELOC_NX(time, time_step, natoms):
 		for _ in range(3):								# skip three lines
 			fp.readline()
 		for _ in range(natoms):							# Write geom file
-			file_geom.write(fp.readline)
+			file_geom.write(fp.readline())
 		for _ in range(2):								# skip two lines
 			fp.readline()
 		for _ in range(natoms):							# Write veloc
-			file_veloc.write(fp.readline)
+			file_veloc.write(fp.readline())
 	file_geom.close()
 	file_veloc.close()
 	# Convert NX format in xyz format

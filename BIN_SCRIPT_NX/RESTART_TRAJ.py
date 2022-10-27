@@ -57,7 +57,7 @@ def PREPARE_FOLDER_TO_RESTART_NX(folder_restart, correct_time, timestep, natoms,
 	return
 
 def CHOOSE_FOLDER():
-	print('Please write your favourite name in the subroutine and be sure to have selected or SHARC or NX')
+	print('Please write your favourite folder name and be sure to have selected or SHARC or NX')
 	# The ref_path must contain the files that will be used as the template for the dynamics
 
 	#folder_restart = "XMS-RESTART-12-9-3s"                # name used during 2-HPP project
@@ -100,7 +100,7 @@ def main():
 	#correct_time, D1 = NX_MODULES.GET_TIME_BASED_ON_D1_REVERSED(PWD, timebreak - 15, timebreak)
 	correct_time, D1 = NX_MODULES.GET_TIME_BASED_ON_D1(PWD, 0, timebreak)
     #correct_time	 = correct_time - 30
-	print(f"{PARAM_FILE.bcolors.OKCYAN} At time {correct_time:5.2f} we have D1 {D1:5.3f} which is the limit for threshold {PARAM_FILE.thresh_d1:5.3f}{PARAM_FILE.bcolors.ENDC}")
+	print(f"{PARAM_FILE.bcolors.OKCYAN} At time {correct_time:5.2f} we have D1 {D1:5.3f} which is the under the limit for threshold {PARAM_FILE.thresh_d1:5.3f}{PARAM_FILE.bcolors.ENDC}")
 	correct_time    = timebreak
 	print(f"{PARAM_FILE.bcolors.OKCYAN} Chosen time at {correct_time:5.2f}{PARAM_FILE.bcolors.ENDC}")
 
@@ -111,8 +111,10 @@ def main():
 	PREPARE_FOLDER_TO_RESTART_NX(folder_restart, correct_time, timestep, natoms, ref_path)
 
 if __name__ == '__main__':
+	print('\n')
 	print(hline)
 	print('This script allow to restart trajectories from a previus NX dynamics')
+	print('\n')
 	print(hline)
 	main()
 
