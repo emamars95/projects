@@ -164,6 +164,7 @@ def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder, path_to_inputfile):
 
     time_traj = GET_DATA(result_folder + "/en.dat", 0)                          # Collect TRAJ time (record 0) from the en.dat file
 
+    error_signal, stop_signal = False, False
     # Read from moldyn.log if the dynamics is finished without errors
     try:     
         error_signal    = subprocess.check_output('grep "::ERROR::" %s/moldyn.log ' % (traj_folder), shell = True).decode('ascii')
@@ -172,7 +173,7 @@ def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder, path_to_inputfile):
     try:    
         stop_signal    = subprocess.check_output('grep "moldyn.pl: End of dynamics" %s/moldyn.log ' % (traj_folder), shell = True).decode('ascii')
     except:    pass
-    
+
     if error_signal:
         summary  += "*  ::ERROR::  *\t"
         data     += "ERROR"
