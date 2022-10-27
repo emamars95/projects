@@ -199,33 +199,40 @@ def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder):
     return summary, data, data_restart
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
+def ROUTINE_DYNAMICS(allname, summary_file, traj_file, folder):
+    # For the folder present in PWD we enter sequentially in each of them
+    for traj_name in allname:
+        traj_folder = f'{PWD}/{traj_name}/' 
+        result_folder = traj_folder + folder
+        if os.path.isdir(result_folder):                        # If some dynamics has been restarted then we check the dynamics output
+           os.chdir(traj_folder)                 
+           summary, data, data_restart = CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder)    
+           summary_file.write(summary + '\n')    
+           traj_file.write(data + '\n')           
+    traj_file.close()      
+    summary_file.close()
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------#
+# Subroutine to check the dynamics outcomes
 def CHECK_DYNAMICS():
+    allname = sorted_nicely(glob.glob("TRAJ*"))
     print (hline)
     print ("*****             The dynamics will be checked              *****\n")
     print (hline) 
-    allname = sorted_nicely(glob.glob("TRAJ*"))
-
-    summary_file = open(PARAM_FILE.summury_file  , 'w')
+    summary_file = open(PARAM_FILE.summary_file  , 'w')
     traj_file = open(PARAM_FILE.traj_file, 'w')
-    traj_file_restart = open(PARAM_FILE.traj_file_restart, 'w')
-    
-    for traj_name in allname:
-        traj_folder = PWD + "/" + traj_name + "/" 
-        result_folder = traj_folder + "RESULTS/"
-        if os.path.isdir(result_folder):                # If the result folder exist the trajectory had been submitted
-            os.chdir(traj_folder)                       # We enter in the folder where some dynamics has been submitted
-            summary, data, data_restart = CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder) # We check the dynamics
-            summary_file.write(summary + '\n')          # We write summary files 
-            traj_file.write(data + '\n')
-            traj_file_restart.write(data_restart + '\n')
-            
-    traj_file.close()      
-    summary_file.close()
-    traj_file_restart.close()
-    if os.stat(PWD + "/" + PARAM_FILE.traj_file_restart).st_size == 0:
-        os.remove(PWD + "/" + PARAM_FILE.traj_file_restart) 
+    folder = 'RESULTS/'
+    ROUTINE_DYNAMICS(allname, summary_file, traj_file, folder)
+    print (hline)
+    print ("*****       The restarted dynamics will be checked         *****\n")
+    print (hline) 
+    summary_file = open(PARAM_FILE.summary_file_restart, 'w')
+    traj_file = open(PARAM_FILE.traj_file_restart, 'w')
+    folder = 'UMP2*/RESULTS/'
+    ROUTINE_DYNAMICS(allname, summary_file, traj_file, folder)
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
+# Subroutine to submit some dynamics
 def SUBMIT_DYNAMICS():
     if not isfile(PARAM_FILE.to_submit_file):                    # If this file does not exist we ask if they want label the trajectory to submit
         # Labeling means to chose a subgroup of trajectory to submit based on random number generator

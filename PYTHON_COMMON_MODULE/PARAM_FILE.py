@@ -32,8 +32,9 @@ to_submit_file = "TO_SUBMIT"
 dont_analyze_file = "DONT_ANALYZE"
 error_dyn = "ERROR"
 # These two file are for analysis of dynamics
-summury_file = "summary.out"
-traj_file = "Trajectory.dat"
+summary_file = "summary.out"
+traj_file = "trajectory.dat"
+summary_file_restart = "summary_restart.out"
 traj_file_restart = "trajectory_restart.dat"
 # These files contains the trajectories in curvilinear coordinates
 coordinate_file	= "COORDINATES.out"
