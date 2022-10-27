@@ -101,7 +101,7 @@ def TAIL_COORDINATES_FILE(result_folder, line):
     os.system(f"head -{line} {coord_file} > {coord_file_to_use}")
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
-def CHECK_REACTIVITY(traj_name, result_folder, time_traj, summary, data, data_restart):
+def CHECK_REACTIVITY(result_folder, time_traj, summary, data):
         # Here we have to check at which molecule we are dealing with. Depending on the molecule the geometrical coordinates can be     #
         # different and therefore, we have to adopt different procedure.                                                                #
         *binx, template_geo = READING_PARAMETER_FILE("%s/%s" %(result_folder, PARAM_FILE.input_for_traj))
@@ -127,7 +127,7 @@ def CHECK_REACTIVITY(traj_name, result_folder, time_traj, summary, data, data_re
                 summary, data = CHECK_REACTIVITY_BH3NH3(coordinate_file, summary, data)
         else: 
             raise ValueError (f'Value not recognized in {template_geo}')
-        return summary, data, data_restart
+        return summary, data
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def PLOT_TRAJ_FINISHED(traj_name, result_folder, time_traj, path_to_inputfile):
@@ -161,7 +161,7 @@ def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder, path_to_inputfile):
             summary += "\t ENERGY DISCONTINUITY"
             data += "ENERGY_DISCONTINUITY"
         else: 
-            summary, data = CHECK_REACTIVITY(traj_name, result_folder, time_traj, summary, data)
+            summary, data = CHECK_REACTIVITY(result_folder, time_traj, summary, data)
 
 # This section is dedicated in case the file DONT_ANALYZE is NOT found in the result folder. In this cases the dynamics is not stopped yet    #
 # or at least it is just finished. In this last case, the file DONT_ANALYZE will be created, warning that is not necessary to analyze         #
