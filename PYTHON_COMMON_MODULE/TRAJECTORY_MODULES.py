@@ -350,7 +350,7 @@ def WRITE_COORDS_AND_BREAKLINE(rangeymax, rangey2min, rangey2max, positionlabel2
 	if break_reason != False :
 		gnuplot_final += '\n  set key bottom \n'
 		gnuplot_final += '  set parametric\n  plot [t=0:%5.3f] %5.3f,t w l lw 2.0 lt 1 lc rgbcolor "#FF0000" title "%s"' % (rangeymax, time_break, break_reason)
-	gnuplot_final += 'unset multiplot'
+	gnuplot_final += '\n\nunset multiplot'
 	return gnuplot_final
 
 
