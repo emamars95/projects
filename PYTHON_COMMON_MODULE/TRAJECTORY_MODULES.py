@@ -155,121 +155,118 @@ def GET_MOLECULE_LABEL(template_geo):
 
 #----------------------------------------------------------------------------------------------------------------------------#	
 def MAKE_GEOMETRICAL_COORDINATES(timestep, template_geo, label_molecule):
-    TMP_COORDINATES_FILE_NAME	= "COORDINATES.out"
     os.system("cp -f dyn.xyz output.xyz")						# Python script read the file output.xyz
-    programgeo                  = '/nobackup/zcxn55/SOFTWARE/SHARC-2.1-corr-edc/bin/geo.py'
-    cmd = "python2 $SHARC/%s -t %5.2f < %s > %s" %(programgeo, timestep, template_geo, TMP_COORDINATES_FILE_NAME )
+    programgeo = '/nobackup/zcxn55/SOFTWARE/SHARC-2.1-corr-edc/bin/geo.py'
+    cmd = "python2 $SHARC/%s -t %5.2f < %s > %s" %(programgeo, timestep, template_geo, PARAM_FILE.coordinate_file)
     os.system(cmd)								# The tmp coordinate file is created
-
     if label_molecule == "HPP" or label_molecule == "HPAC":
-        label		= "   time\t\tO-O\t\t\tO-H\t\t\tO--H\t\tC-C\t\t\tC=0\t\tC=O pyramid\t\tC-O\t\td 3 1 4 10\t\td 2 1 4 10\t\tC1--O11"
+        label = "   time\t\tO-O\t\t\tO-H\t\t\tO--H\t\tC-C\t\t\tC=0\t\tC=O pyramid\t\tC-O\t\td 3 1 4 10\t\td 2 1 4 10\t\tC1--O11"
     elif label_molecule == "PYRONE":
-        label           = "   time\t\tC=0"
+        label = "   time\t\tC=0"
     elif label_molecule == "FORMALDEHYDE":
-        label           = "   time\t\tC=0"
+        label = "   time\t\tC=0"
     elif label_molecule == "ACROLEIN":
-        label           = "   time\t\tC=0"
+        label = "   time\t\tC=0"
     elif label_molecule == "BH3NH3":
-        label           = "   time\t\t\tB-N\t\t\tN-H\t\tN-H\t\t\tN-H\t\tB-H\t\t\tB-H\t\tB-H\t\tNH3 pyramid\t\tBH3 pyramid"
+        label = "   time\t\t\tB-N\t\t\tN-H\t\tN-H\t\t\tN-H\t\tB-H\t\t\tB-H\t\tB-H\t\tNH3 pyramid\t\tBH3 pyramid"
     elif label_molecule == "Pyridine":
-        label           = "   time\t\t\tB-N\t\t\tB-H\t\t\tB-H\t\tB-H\t\tBH3 pyramid"
+        label = "   time\t\t\tB-N\t\t\tB-H\t\t\tB-H\t\tB-H\t\tBH3 pyramid"
     elif label_molecule == "Nucleic_Acid":
-        label           = "   time\t\tC-O\t\t\tC-C"
-    os.system("sed -i '1d' %s" 		%(TMP_COORDINATES_FILE_NAME))
-    os.system('sed -i "s/time.*/%s/g" ' %(TMP_COORDINATES_FILE_NAME))
+        label = "   time\t\tC-O\t\t\tC-C"
+    os.system("sed -i '1d' %s" 		%(PARAM_FILE.coordinate_file))
+    os.system('sed -i "s/time.*/%s/g" ' %(PARAM_FILE.coordinate_file))
     return
 
 #----------------------------------------------------------------------------------------------------------------------------#
 def WRITE_HEAD_GP(outname, rangexmin, rangexmax, rangeymin, rangeymax, positionlabel1):
-    GNUPLOT_HEAD    =  'set terminal pngcairo enhanced dashed font "Helvetica,28.0" size 1300,1200\nset encoding iso_8859_1\n'
-    GNUPLOT_HEAD    += 'set output "%s"\n\n' 						% (outname)
-    GNUPLOT_HEAD    += 'set dashtype 11 (10,9)\nset dashtype 12 (5,8)\n\n'
-    GNUPLOT_HEAD    += 'set lmargin at screen 0.11\nset rmargin at screen 0.86\n'
-    GNUPLOT_HEAD    += 'set xrange[%i:%i]\nset xlabel "Time (fs)"\n' 			% (rangexmin, rangexmax)
-    GNUPLOT_HEAD    += 'set title offset 0,-0.8\n'
-    GNUPLOT_HEAD    += 'set multiplot\n  set ytics nomirror\n  set key at %s\n  set ylabel "Relative Energy(eV)"\n  set yrange[%s:%s]\n'  %(positionlabel1, rangeymin, rangeymax)
+    gnuplot_head    =  'set terminal pngcairo enhanced dashed font "Helvetica,28.0" size 1300,1200\nset encoding iso_8859_1\n'
+    gnuplot_head    += 'set output "%s"\n\n' 						% (outname)
+    gnuplot_head    += 'set dashtype 11 (10,9)\nset dashtype 12 (5,8)\n\n'
+    gnuplot_head    += 'set lmargin at screen 0.11\nset rmargin at screen 0.86\n'
+    gnuplot_head    += 'set xrange[%i:%i]\nset xlabel "Time (fs)"\n' 			% (rangexmin, rangexmax)
+    gnuplot_head    += 'set title offset 0,-0.8\n'
+    gnuplot_head    += 'set multiplot\n  set ytics nomirror\n  set key at %s\n  set ylabel "Relative Energy(eV)"\n  set yrange[%s:%s]\n'  %(positionlabel1, rangeymin, rangeymax)
 
-    return GNUPLOT_HEAD
+    return gnuplot_head
 
 #----------------------------------------------------------------------------------------------------------------------------#					
 def WRITE_GEOMETRICAL_CORDINATES_HPP_GP(INPUT_COORD, GNUPLOT_TIME_label):
-#This subrouting will create a GNUPLOT_COORD for gnuplot. The GNUPLOT_COORD, depending on the INPUT, will plot different coordinates such as O-H, O-O...
+#This subrouting will create a gnuplot_coord for gnuplot. The gnuplot_coord, depending on the INPUT, will plot different coordinates such as O-H, O-O...
 #Notice that you need to modify Geo_new.out file in case the geometrical paramenter changes.  
-	GNUPLOT_COORD 	= ''
+	gnuplot_coord 	= ''
 	index		= []
 	if ( "A" in INPUT_COORD ):
-		GNUPLOT_COORD += '  plot "COORDINATES.out" using %s:2 w l lw 5 dt 11 lc rgbcolor "#FF4500" title "O-O bond" axes x1y2'	% (GNUPLOT_TIME_label) 	#Orange for O-O
+		gnuplot_coord += '  plot "COORDINATES.out" using %s:2 w l lw 5 dt 11 lc rgbcolor "#FF4500" title "O-O bond" axes x1y2'	% (GNUPLOT_TIME_label) 	#Orange for O-O
 		y2label = '"Bond Length ({\\305})"'
 		index.append(2)
 	if ( "B" in INPUT_COORD ):
-		GNUPLOT_COORD += ', \\\n  "" using %s:4 w l lw 5 dt 11 lc rgbcolor "#660033" title "O--H bond" axes x1y2'		% (GNUPLOT_TIME_label)	#Purple for O--H
+		gnuplot_coord += ', \\\n  "" using %s:4 w l lw 5 dt 11 lc rgbcolor "#660033" title "O--H bond" axes x1y2'		% (GNUPLOT_TIME_label)	#Purple for O--H
 		index.append(4)
 	if ( "C" in INPUT_COORD ):
-		GNUPLOT_COORD += ', \\\n  "" using %s:5 w l lw 5 dt 11 lc rgbcolor "#800000" title "C-C bond" axes x1y2'			% (GNUPLOT_TIME_label)	#Maroon 
+		gnuplot_coord += ', \\\n  "" using %s:5 w l lw 5 dt 11 lc rgbcolor "#800000" title "C-C bond" axes x1y2'			% (GNUPLOT_TIME_label)	#Maroon 
 		index.append(5)
 	if ( "D" in INPUT_COORD ):
-		GNUPLOT_COORD += ', \\\n  "" using %s:6 w l lw 5 dt 11 lc rgbcolor "#FFD700" title "C=O bond" axes x1y2'			% (GNUPLOT_TIME_label)	#Yellow
+		gnuplot_coord += ', \\\n  "" using %s:6 w l lw 5 dt 11 lc rgbcolor "#FFD700" title "C=O bond" axes x1y2'			% (GNUPLOT_TIME_label)	#Yellow
 		index.append(6)
 	if ( "F" in INPUT_COORD ):
-		GNUPLOT_COORD += ', \\\n  "" using %s:3 w l lw 5 dt 11 lc rgbcolor "#FF0000" title "O-H bond" axes x1y2'			% (GNUPLOT_TIME_label)	#Red
+		gnuplot_coord += ', \\\n  "" using %s:3 w l lw 5 dt 11 lc rgbcolor "#FF0000" title "O-H bond" axes x1y2'			% (GNUPLOT_TIME_label)	#Red
 		index.append(3)
 	if ( "G" in INPUT_COORD ):
-		GNUPLOT_COORD += ', \\\n  "" using %s:8 w l lw 5 dt 11 lc rgbcolor "#21908d" title "C-O bond" axes x1y2'			% (GNUPLOT_TIME_label)	#Teal
+		gnuplot_coord += ', \\\n  "" using %s:8 w l lw 5 dt 11 lc rgbcolor "#21908d" title "C-O bond" axes x1y2'			% (GNUPLOT_TIME_label)	#Teal
 		index.append(8)
 	if ( "E" in INPUT_COORD ):
-		GNUPLOT_COORD += ', \\\n  "" using %s:($7/10) w l lw 5 dt 11 lc rgbcolor "#aadc32" title "Pyramidalization" axes x1y2'	% (GNUPLOT_TIME_label)	#Lime Green
+		gnuplot_coord += ', \\\n  "" using %s:($7/10) w l lw 5 dt 11 lc rgbcolor "#aadc32" title "Pyramidalization" axes x1y2'	% (GNUPLOT_TIME_label)	#Lime Green
 		index.append(7)
 		y2label = '"Bond Length ({\\305}) / Angle (10^-^1)"'
 #y2label is the label associated with the second plot of multiplot. Depending on which coordinate you chose it can change.
-	return GNUPLOT_COORD, y2label, index
+	return gnuplot_coord, y2label, index
 
 #----------------------------------------------------------------------------------------------------------------------------#                                  
 def WRITE_GEOMETRICAL_CORDINATES_BH3NH3_GP(INPUT_COORD, GNUPLOT_TIME_label):
-	GNUPLOT_COORD   = '';	index           = []
+	gnuplot_coord   = '';	index           = []
 	if ( "A" in INPUT_COORD ):
-		GNUPLOT_COORD 	+= '  plot "COORDINATES.out" using %s:2 w l lw 5 dt 11 lc rgbcolor "#FF4500" title "N-B bond" axes x1y2'   % (GNUPLOT_TIME_label)  # Orange
+		gnuplot_coord 	+= '  plot "COORDINATES.out" using %s:2 w l lw 5 dt 11 lc rgbcolor "#FF4500" title "N-B bond" axes x1y2'   % (GNUPLOT_TIME_label)  # Orange
 		y2label 	=  '"Bond Length ({\\305})"'
 		index.append(2)
 	if ( "B" in INPUT_COORD ):
-		GNUPLOT_COORD += ', \\\n  "" using %s:3 w l lw 5 dt 11 lc rgbcolor "#660033" title "N-H bonds" axes x1y2'   	% (GNUPLOT_TIME_label)  # Purple
-		GNUPLOT_COORD += ', \\\n  "" using %s:4 w l lw 5 dt 11 lc rgbcolor "#660033" notitle axes x1y2'   		% (GNUPLOT_TIME_label)  
-		GNUPLOT_COORD += ', \\\n  "" using %s:5 w l lw 5 dt 11 lc rgbcolor "#660033" notitle axes x1y2'   		% (GNUPLOT_TIME_label)  	
+		gnuplot_coord += ', \\\n  "" using %s:3 w l lw 5 dt 11 lc rgbcolor "#660033" title "N-H bonds" axes x1y2'   	% (GNUPLOT_TIME_label)  # Purple
+		gnuplot_coord += ', \\\n  "" using %s:4 w l lw 5 dt 11 lc rgbcolor "#660033" notitle axes x1y2'   		% (GNUPLOT_TIME_label)  
+		gnuplot_coord += ', \\\n  "" using %s:5 w l lw 5 dt 11 lc rgbcolor "#660033" notitle axes x1y2'   		% (GNUPLOT_TIME_label)  	
 		index.append(3); index.append(4); index.append(5)
 	if ( "C" in INPUT_COORD ):
-		GNUPLOT_COORD += ', \\\n  "" using %s:6 w l lw 5 dt 11 lc rgbcolor "#FFD700" title "B-H bonds" axes x1y2'        % (GNUPLOT_TIME_label)  
-		GNUPLOT_COORD += ', \\\n  "" using %s:7 w l lw 5 dt 11 lc rgbcolor "#FFD700" notitle axes x1y2'                  % (GNUPLOT_TIME_label)
-		GNUPLOT_COORD += ', \\\n  "" using %s:8 w l lw 5 dt 11 lc rgbcolor "#FFD700" notitle axes x1y2'                  % (GNUPLOT_TIME_label)
+		gnuplot_coord += ', \\\n  "" using %s:6 w l lw 5 dt 11 lc rgbcolor "#FFD700" title "B-H bonds" axes x1y2'        % (GNUPLOT_TIME_label)  
+		gnuplot_coord += ', \\\n  "" using %s:7 w l lw 5 dt 11 lc rgbcolor "#FFD700" notitle axes x1y2'                  % (GNUPLOT_TIME_label)
+		gnuplot_coord += ', \\\n  "" using %s:8 w l lw 5 dt 11 lc rgbcolor "#FFD700" notitle axes x1y2'                  % (GNUPLOT_TIME_label)
 		index.append(6); index.append(7); index.append(8)
 
-	return GNUPLOT_COORD, y2label, index
+	return gnuplot_coord, y2label, index
 
 #----------------------------------------------------------------------------------------------------------------------------#                                  
 def WRITE_GEOMETRICAL_CORDINATES_Pyridine_GP(INPUT_COORD, GNUPLOT_TIME_label):
-        GNUPLOT_COORD   = '';   index           = []
-        if ( "A" in INPUT_COORD ):
-                GNUPLOT_COORD   += '  plot "COORDINATES.out" using %s:2 w l lw 5 dt 11 lc rgbcolor "#FF4500" title "N-B bond" axes x1y2'   % (GNUPLOT_TIME_label)  # Orange
-                y2label         =  '"Bond Length ({\\305})"'
-                index.append(2)
-        if ( "B" in INPUT_COORD ):
-                GNUPLOT_COORD += ', \\\n  "" using %s:3 w l lw 5 dt 11 lc rgbcolor "#FFD700" title "B-H bonds" axes x1y2'        % (GNUPLOT_TIME_label)
-                GNUPLOT_COORD += ', \\\n  "" using %s:4 w l lw 5 dt 11 lc rgbcolor "#FFD700" notitle axes x1y2'                  % (GNUPLOT_TIME_label)
-                GNUPLOT_COORD += ', \\\n  "" using %s:5 w l lw 5 dt 11 lc rgbcolor "#FFD700" notitle axes x1y2'                  % (GNUPLOT_TIME_label)
-                index.append(3); index.append(4); index.append(5)
+    gnuplot_coord   = '';   index           = []
+    if ( "A" in INPUT_COORD ):
+            gnuplot_coord   += '  plot "COORDINATES.out" using %s:2 w l lw 5 dt 11 lc rgbcolor "#FF4500" title "N-B bond" axes x1y2'   % (GNUPLOT_TIME_label)  # Orange
+            y2label         =  '"Bond Length ({\\305})"'
+            index.append(2)
+    if ( "B" in INPUT_COORD ):
+            gnuplot_coord += ', \\\n  "" using %s:3 w l lw 5 dt 11 lc rgbcolor "#FFD700" title "B-H bonds" axes x1y2'        % (GNUPLOT_TIME_label)
+            gnuplot_coord += ', \\\n  "" using %s:4 w l lw 5 dt 11 lc rgbcolor "#FFD700" notitle axes x1y2'                  % (GNUPLOT_TIME_label)
+            gnuplot_coord += ', \\\n  "" using %s:5 w l lw 5 dt 11 lc rgbcolor "#FFD700" notitle axes x1y2'                  % (GNUPLOT_TIME_label)
+            index.append(3); index.append(4); index.append(5)
+    return gnuplot_coord, y2label, index
 
-        return GNUPLOT_COORD, y2label, index
-
-
+#----------------------------------------------------------------------------------------------------------------------------#
 def WRITE_GEOMETRICAL_CORDINATES_Nucleic_Acid_GP(INPUT_COORD, GNUPLOT_TIME_label):
-        GNUPLOT_COORD   = '';   index           = []
-        if ( "A" in INPUT_COORD ):
-                GNUPLOT_COORD   += '  plot "COORDINATES.out" using %s:2 w l lw 5 dt 11 lc rgbcolor "#FF4500" title "C-O bond" axes x1y2'   % (GNUPLOT_TIME_label)  # Orange
-                y2label         =  '"Bond Length ({\\305})"'
-                index.append(2)
-        if ( "B" in INPUT_COORD ):
-                GNUPLOT_COORD += ', \\\n  "" using %s:3 w l lw 5 dt 11 lc rgbcolor "#FFD700" title "C-C bonds" axes x1y2'        % (GNUPLOT_TIME_label)
-                index.append(3); 
+    gnuplot_coord   = '';   index           = []
+    if ( "A" in INPUT_COORD ):
+            gnuplot_coord   += '  plot "COORDINATES.out" using %s:2 w l lw 5 dt 11 lc rgbcolor "#FF4500" title "C-O bond" axes x1y2'   % (GNUPLOT_TIME_label)  # Orange
+            y2label         =  '"Bond Length ({\\305})"'
+            index.append(2)
+    if ( "B" in INPUT_COORD ):
+            gnuplot_coord += ', \\\n  "" using %s:3 w l lw 5 dt 11 lc rgbcolor "#FFD700" title "C-C bonds" axes x1y2'        % (GNUPLOT_TIME_label)
+            index.append(3); 
 
-        return GNUPLOT_COORD, y2label, index
+    return gnuplot_coord, y2label, index
 
 
 #----------------------------------------------------------------------------------------------------------------------------#
@@ -345,7 +342,7 @@ def WRITE_SH_STATE_GP_RESTARTED_FROM_NX(STATE_LIST, colorS, TIME_RESTART, lislin
 	TIME_END_OF_DYN = float(subprocess.check_output(['tail', '-1', DYN_DATAFILE]).split()[0])       # List time found in DYN_DATAFILE is the point at which the dynamics end
 # The S0 energy of the parent dynamics at the TIME_RESTART
 	INIT_S1_ENERGY  = float(subprocess.check_output(['tail', '-' + str(int( (TIME_END_OF_DYN - TIME_RESTART) * 2 + 1 )), DYN_DATAFILE]).split()[2])
-	scaling         = - (float(lisline[5]) / 27.2114) + INIT_S1_ENERGY                              # the scaling for the parent dynamics will be so that the S1 energies at 
+	scaling         = - (float(lisline[5])/PARAM_FILE.ev_au_conv) + INIT_S1_ENERGY                              # the scaling for the parent dynamics will be so that the S1 energies at 
 # TIME_RESTART will be exactly the same for both calculation (we will have the line conciding at the same point).
 #	print (TIME_END_OF_DYN, INIT_S1_ENERGY, scaling, lisline[5])					# !!5 is the index for energy S1!!
 	for i in range(STATE_LIST[0]):	# Here the number the singlet but could be a sub set of the number of electronic states in the NX dynamics
@@ -357,25 +354,25 @@ def WRITE_SH_STATE_GP_RESTARTED_FROM_NX(STATE_LIST, colorS, TIME_RESTART, lislin
 def WRITE_COORDS_AND_BREAKLINE(rangeymax, rangey2max, positionlabel2, TIMEBREAK, BREAKREASON, INPUT_COORD, GNUPLOT_TIME_label, label_molecule):
 #Plot the second part with multipot
 	if 	label_molecule == "HPP":
-		GNUPLOT_COORD, y2label, index = WRITE_GEOMETRICAL_CORDINATES_HPP_GP(   INPUT_COORD, GNUPLOT_TIME_label)
+		gnuplot_coord, y2label, index = WRITE_GEOMETRICAL_CORDINATES_HPP_GP(INPUT_COORD, GNUPLOT_TIME_label)
 	elif 	label_molecule == "BH3NH3":
-		GNUPLOT_COORD, y2label, index = WRITE_GEOMETRICAL_CORDINATES_BH3NH3_GP(INPUT_COORD, GNUPLOT_TIME_label)
+		gnuplot_coord, y2label, index = WRITE_GEOMETRICAL_CORDINATES_BH3NH3_GP(INPUT_COORD, GNUPLOT_TIME_label)
 	elif	label_molecule == "Pyridine":
-		GNUPLOT_COORD, y2label, index = WRITE_GEOMETRICAL_CORDINATES_Pyridine_GP(INPUT_COORD, GNUPLOT_TIME_label) 
+		gnuplot_coord, y2label, index = WRITE_GEOMETRICAL_CORDINATES_Pyridine_GP(INPUT_COORD, GNUPLOT_TIME_label) 
 	elif 	label_molecule == "Nucleic_Acid":
-		GNUPLOT_COORD, y2label, index = WRITE_GEOMETRICAL_CORDINATES_Nucleic_Acid_GP(INPUT_COORD, GNUPLOT_TIME_label)
+		gnuplot_coord, y2label, index = WRITE_GEOMETRICAL_CORDINATES_Nucleic_Acid_GP(INPUT_COORD, GNUPLOT_TIME_label)
 	else:
 		print ("\n * Not implemented for molecule * \n", label_molecule)
 
-	GNUPLOT_FINAL  = ''
-	GNUPLOT_FINAL += '  unset key\n  unset ylabel\n  unset yrange\n  unset ytics\n'
-	GNUPLOT_FINAL += '  set y2label %s\n  set y2tics\n  set key at %s\n  set y2range[0.75:%s]\n' 	% (y2label, positionlabel2, rangey2max)
-	GNUPLOT_FINAL += GNUPLOT_COORD         								#string is the plot associated with the coordinates analysis
+	gnuplot_final  = ''
+	gnuplot_final += '  unset key\n  unset ylabel\n  unset yrange\n  unset ytics\n'
+	gnuplot_final += '  set y2label %s\n  set y2tics\n  set key at %s\n  set y2range[0.75:%s]\n' 	% (y2label, positionlabel2, rangey2max)
+	gnuplot_final += gnuplot_coord         								#string is the plot associated with the coordinates analysis
 #Finally we add a vertical line to indicate at which time the dynamics is not valid anymore
 	if BREAKREASON != False :
-		GNUPLOT_FINAL += '\n  set key bottom \n'
-		GNUPLOT_FINAL += '  set parametric\n  plot [t=0:%5.3f] %5.3f,t w l lw 2.0 lt 1 lc rgbcolor "#FF0000" title "%s"' % (rangeymax, TIMEBREAK, BREAKREASON)
-	return GNUPLOT_FINAL
+		gnuplot_final += '\n  set key bottom \n'
+		gnuplot_final += '  set parametric\n  plot [t=0:%5.3f] %5.3f,t w l lw 2.0 lt 1 lc rgbcolor "#FF0000" title "%s"' % (rangeymax, TIMEBREAK, BREAKREASON)
+	return gnuplot_final
 
 
 
