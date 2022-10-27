@@ -141,7 +141,7 @@ def GENERATE_D1_FILE(file, dictionary):
                 i += 1
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
-def PLOT_TRAJ_FINISHED(traj_name, result_folder, time_traj, path_to_inputfile, dictionary):
+def PLOT_TRAJ_FINISHED(traj_name, result_folder, time_traj, path_to_inputfile):
     print(f'{traj_name}\t is just finished. It will be fully analyzed automatically.\n')
     COPY_FILE(traj_name, result_folder, PARAM_FILE.input_for_traj, time_traj, path_to_inputfile)       # We modify the two file changing name of the trajectories and the time
     os.system(f"{PARAM_FILE.plot_traj_script} {PARAM_FILE.input_for_traj}")                             # RUN our script to generate trajectory plots.
