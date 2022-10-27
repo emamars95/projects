@@ -19,6 +19,7 @@ def COPY_FILES(folder_restart, ref_path, file_list):
 	# Create the folder
 	if isdir(folder_restart):
 		rmtree(folder_restart)
+		print('removing folder')
 	os.mkdir(folder_restart)
 	# copy list of files in a folder
 	for file_name in file_list:
@@ -112,7 +113,7 @@ def main():
 	print(f"{PARAM_FILE.bcolors.OKCYAN} Restarting time: {correct_time:5.2f}{PARAM_FILE.bcolors.ENDC}")
 
 	folder_restart, ref_path = CHOOSE_FOLDER()
-	folder_restart  = f'{PWD}/../{folder_restart}_{str(correct_time)}' 
+	folder_restart  = f'{PWD}/../{folder_restart}_{str(correct_time)}/' 
 
 	#PREPARE_FOLDER_TO_RESTART_SHARC(folder_restart, correct_time, timestep, natoms, ref_path)
 	PREPARE_FOLDER_TO_RESTART_NX(folder_restart, correct_time, timestep, natoms, ref_path)
