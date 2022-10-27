@@ -32,16 +32,16 @@ def TOT_ENERGY_CHECK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY):
 	E_GAP	= abs(tot_energy_step_2 - tot_energy_step_1) 			# Energies are given in eV
 # FIRST CONDITION to break:   GAP in total energy LARGER THAN 
 	if E_GAP > 0.2:
-		BREAKREASON     = "GAP"						# We compare the enrgy between the current and previous step
+		break_reason     = "GAP"						# We compare the enrgy between the current and previous step
 # SECOND CONDITION to break:  DRIFT LARGER THAN
 	elif abs(INIT_TOT_ENERGY - tot_energy_step_2) > 0.3:                  	# Check the drift comparing with the initial total energy
-		BREAKREASON     = "DRIFT"
+		break_reason     = "DRIFT"
 # If there is a small gap with warn the user
 	elif E_GAP > Thresh_EGAP:
-		BREAKREASON     = "WARNING"
+		break_reason     = "WARNING"
 	else:
-		BREAKREASON 	= False
-	return BREAKREASON, E_GAP
+		break_reason 	= False
+	return break_reason, E_GAP
 
 #----------------------------------------------------------------------------------------------------------------------------#
 def PRINT_WARNING(warning, E_GAP, time):
@@ -49,33 +49,33 @@ def PRINT_WARNING(warning, E_GAP, time):
 	print(f"{PARAM_FILE.bcolors.WARNING}%5.2f eV discontinuity at time: %5.2f fs{PARAM_FILE.bcolors.ENDC}" %(E_GAP, time))
 	return warning
 
-def PRINT_BREAK(E_GAP, TIME, BREAKREASON):
-	print (f"{PARAM_FILE.bcolors.FAIL}%5.2f eV discontinuity. Dynamics stoped at: %5.2f fs due %s {PARAM_FILE.bcolors.ENDC}" %(E_GAP, TIME, BREAKREASON))
+def PRINT_BREAK(E_GAP, TIME, break_reason):
+	print (f"{PARAM_FILE.bcolors.FAIL}%5.2f eV discontinuity. Dynamics stoped at: %5.2f fs due %s {PARAM_FILE.bcolors.ENDC}" %(E_GAP, TIME, break_reason))
 	os.system("touch %s" %(PARAM_FILE.error_dyn))
 	return
 
-def CHECK_BREAK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY, warning, TIME, BREAKREASON):
-	if BREAKREASON == "SWITCH":							tobreak = True;
+def CHECK_BREAK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY, warning, TIME, break_reason):
+	if break_reason == "SWITCH":							tobreak = True;
 	else:
-		BREAKREASON, E_GAP      = TOT_ENERGY_CHECK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY)
-		if not BREAKREASON:					# If there is no gap we update the i-1 record
+		break_reason, E_GAP      = TOT_ENERGY_CHECK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY)
+		if not break_reason:					# If there is no gap we update the i-1 record
 			tot_energy_step_1       = tot_energy_step_2; 			tobreak	= False
-		elif (BREAKREASON == "WARNING"):
+		elif (break_reason == "WARNING"):
 			warning 	= PRINT_WARNING(warning, E_GAP, TIME)
 			if warning >= 5: 
-				PRINT_BREAK(E_GAP, TIME, BREAKREASON);			tobreak = True
+				PRINT_BREAK(E_GAP, TIME, break_reason);			tobreak = True
 			else: 
 				tot_energy_step_1 = tot_energy_step_2;			tobreak = False
 		else: 
-			PRINT_BREAK(E_GAP, TIME, BREAKREASON); 				tobreak = True; 
-	return tot_energy_step_1, tot_energy_step_2, warning, TIME, BREAKREASON, tobreak
+			PRINT_BREAK(E_GAP, TIME, break_reason); 				tobreak = True; 
+	return tot_energy_step_1, tot_energy_step_2, warning, TIME, break_reason, tobreak
 
 #----------------------------------------------------------------------------------------------------------------------------#
 def TRAJECTORY_BREAK_SH(EnergyFile, nmstates, timestep):
 	INIT_TOT_ENERGY         = 0.0;	tot_energy_step_1       = 0.0;	tot_energy_step_2       = 0.0; 	warning			= 0
 	with open(EnergyFile, "r") as fp:
 		for i, lisline in enumerate(fp):
-			BREAKREASON = False
+			break_reason = False
 			lisline = lisline.split()
 			if i == 5: 					#Line six is the first point of the dynamics t = 0 fs
 				tot_energy_step_1	= float(lisline[6])		# Energy in eV.
@@ -83,17 +83,17 @@ def TRAJECTORY_BREAK_SH(EnergyFile, nmstates, timestep):
 			if (i > 5) and (lisline[0] != "#"):		# '#' occurs in out file when the traj HOPs. We want skip that line
 				TIME = float(lisline[1])
 				tot_energy_step_2	= float(lisline[6])		# Energy in eV.
-				(tot_energy_step_1, tot_energy_step_2, warning, TIME, BREAKREASON,
-					tobreak) = CHECK_BREAK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY, warning, TIME, BREAKREASON)
+				(tot_energy_step_1, tot_energy_step_2, warning, TIME, break_reason,
+					tobreak) = CHECK_BREAK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY, warning, TIME, break_reason)
 				if tobreak: break
-	return TIME, BREAKREASON
+	return TIME, break_reason
 
 #----------------------------------------------------------------------------------------------------------------------------#
 def TRAJECTORY_BREAK_NX(EnergyFile, nmstates, timestep):
 	INIT_TOT_ENERGY		= 0.0; 	tot_energy_step_1	= 0.0;	tot_energy_step_2	= 0.0;  warning                 = 0
 	with open(EnergyFile,"r") as fp:
 		for i, lisline in enumerate(fp):
-			BREAKREASON = False
+			break_reason = False
 			lisline	= lisline.split(); TIME = float(lisline[0])
 			if i == 0: 					# Line 0 is the first point of the dynamics t = 0 fs
 				# Here we multiply for the conversion factor to get the energies in eV
@@ -105,14 +105,14 @@ def TRAJECTORY_BREAK_NX(EnergyFile, nmstates, timestep):
 				# The total energy for the actual line is saved in the variable
 				tot_energy_step_2 	= float(lisline[nmstates + 2]) * PARAM_FILE.ev_au_conv
 				# Here we check the energy discontinuities and if there are some drift with trajectories
-				BREAKREASON, E_GAP 	= TOT_ENERGY_CHECK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY) 
+				break_reason, E_GAP 	= TOT_ENERGY_CHECK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY) 
 # It is necessary for TDDFT and ADC(2) dynamics when we can have a swap of S0 and S1 excited state. Clearly the dynamics beyond is not valid anymore.
 # THIRD CONDITION: (S0 energy - S1 energy) > 0.0 ==> S1 and S0 cross 
-				if float(lisline[1]) - float(lisline[2]) > 0:   BREAKREASON	= "SWITCH"; 	
-				(tot_energy_step_1, tot_energy_step_2, warning, TIME, BREAKREASON,
-					 tobreak) = CHECK_BREAK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY, warning, TIME, BREAKREASON)
+				if float(lisline[1]) - float(lisline[2]) > 0:   break_reason	= "SWITCH"; 	
+				(tot_energy_step_1, tot_energy_step_2, warning, TIME, break_reason,
+					 tobreak) = CHECK_BREAK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY, warning, TIME, break_reason)
 				if tobreak: break
-	return TIME, BREAKREASON, s0_ene/PARAM_FILE.ev_au_conv
+	return TIME, break_reason, s0_ene/PARAM_FILE.ev_au_conv
 
 #----------------------------------------------------------------------------------------------------------------------------#
 def GET_MOLECULE_LABEL(template_geo):
@@ -329,7 +329,7 @@ def WRITE_SH_STATE_GP_RESTARTED(state_list, time_restart, lisline):
 	return gnuplot_state
 
 #----------------------------------------------------------------------------------------------------------------------------#
-def WRITE_COORDS_AND_BREAKLINE(rangeymax, rangey2min, rangey2max, positionlabel2, TIMEBREAK, BREAKREASON, input_coord, gnuplot_time_label, label_molecule):
+def WRITE_COORDS_AND_BREAKLINE(rangeymax, rangey2min, rangey2max, positionlabel2, time_break, break_reason, input_coord, gnuplot_time_label, label_molecule):
 #Plot the second part with multipot
 	if 	label_molecule == "HPP":
 		gnuplot_coord, y2label, index = WRITE_GEOMETRICAL_CORDINATES_HPP_GP(input_coord, gnuplot_time_label)
@@ -347,9 +347,9 @@ def WRITE_COORDS_AND_BREAKLINE(rangeymax, rangey2min, rangey2max, positionlabel2
 	gnuplot_final += '  set y2label %s\n  set y2tics\n  set key at %s\n  set y2range[0.75:%s]\n' 	% (y2label, positionlabel2, rangey2max)
 	gnuplot_final += gnuplot_coord         								#string is the plot associated with the coordinates analysis
 #Finally we add a vertical line to indicate at which time the dynamics is not valid anymore
-	if BREAKREASON != False :
+	if break_reason != False :
 		gnuplot_final += '\n  set key bottom \n'
-		gnuplot_final += '  set parametric\n  plot [t=0:%5.3f] %5.3f,t w l lw 2.0 lt 1 lc rgbcolor "#FF0000" title "%s"' % (rangeymax, TIMEBREAK, BREAKREASON)
+		gnuplot_final += '  set parametric\n  plot [t=0:%5.3f] %5.3f,t w l lw 2.0 lt 1 lc rgbcolor "#FF0000" title "%s"' % (rangeymax, time_break, break_reason)
 	return gnuplot_final
 
 
