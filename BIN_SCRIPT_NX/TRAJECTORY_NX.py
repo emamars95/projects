@@ -193,6 +193,9 @@ def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder, path_to_inputfile):
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def ROUTINE_DYNAMICS(allname, summary_file, traj_file, folder, path_to_inputfile):
+    import sys
+    summary_file = open(summary_file  , 'w')
+    traj_file = open(traj_file, 'w')
     # For the folder present in PWD we enter sequentially in each of them
     for traj_name in allname:
         traj_folder = f'{PWD}/{traj_name}/' 
@@ -201,7 +204,8 @@ def ROUTINE_DYNAMICS(allname, summary_file, traj_file, folder, path_to_inputfile
             os.chdir(traj_folder)                 
             summary, data = CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder[0], path_to_inputfile)    
             summary_file.write(summary + '\n')    
-            traj_file.write(data + '\n')           
+            traj_file.write(data + '\n')   
+            sys.exit("test")        
     traj_file.close()      
     summary_file.close()
 
@@ -212,19 +216,14 @@ def CHECK_DYNAMICS():
     print (hline)
     print ("*****             The dynamics will be checked              *****\n")
     print (hline) 
-    summary_file = open(PARAM_FILE.summary_file  , 'w')
-    traj_file = open(PARAM_FILE.traj_file, 'w')
     folder = 'RESULTS/'
-    ROUTINE_DYNAMICS(allname, summary_file, traj_file, folder, path_to_inputfile = PWD)
-
+    ROUTINE_DYNAMICS(allname, PARAM_FILE.summary_file, PARAM_FILE.traj_file, folder, path_to_inputfile = PWD)
     print (hline)
     print ("*****       The restarted dynamics will be checked         *****\n")
     print (hline) 
-    summary_file = open(PARAM_FILE.summary_file_restart, 'w')
-    traj_file = open(PARAM_FILE.traj_file_restart, 'w')
     folder = 'UMP2*/RESULTS/'
     path_to_inputfile = '/ddn/home/fzzq22/CODE_AND_SCRIPT/TEMPLATE_RESTARTs/NX_UMP2'
-    ROUTINE_DYNAMICS(allname, summary_file, traj_file, folder, path_to_inputfile)
+    ROUTINE_DYNAMICS(allname, PARAM_FILE.summary_file_restart, PARAM_FILE.traj_file_restart, folder, path_to_inputfile)
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 # Subroutine to submit some dynamics
