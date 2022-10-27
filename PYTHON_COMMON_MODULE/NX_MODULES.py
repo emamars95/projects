@@ -45,7 +45,7 @@ def MAKE_GEOM_VELOC_NX(time, time_step):
         os.system(". load-NX.sh && $NX/nx2xyz > geom.xyz")
         # Generate the veloc file from the step we are interested in 
         os.system("sed -n '/New velocity:/,/time    Etot         Ekin/{//!p;}' out.tmp | awk 'NF' > veloc ")
-        os.system("rm -f out.tmp")
+        #os.system("rm -f out.tmp")
         return
 
 # Chose random trajectories from a bunch s
