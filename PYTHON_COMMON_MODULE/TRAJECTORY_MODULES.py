@@ -255,7 +255,7 @@ def WRITE_GEOMETRICAL_CORDINATES_Nucleic_Acid_GP(input_coord, gnuplot_time_label
 
 
 #----------------------------------------------------------------------------------------------------------------------------#
-def WRITE_NX_STATE_GP(nstates, state_list, s0_ene, t_label, datafile, time_restart, restart):
+def WRITE_NX_STATE_GP(nstates, state_list, s0_ene, t_label, datafile):
 	singlets = 0; triplets = 1;
 	lw_1 = 3.0;	lw_2 = 6.0;
 	gnuplot_state = f' plot "{datafile}" u {t_label}:((${nstates+3} - {s0_ene:9.5f})*{PARAM_FILE.ev_au_conv}) title "Total Energy" lw {lw_1:3.1f} lc rgbcolor "#000000" w l, \\\n'
