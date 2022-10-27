@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-from os.path import isfile
+from os.path import isfile, isdir
+from shutil import rmtree, copy, move
 import sys
 import os
 import random
@@ -10,52 +11,52 @@ from TRAJECTORY_MODULES     import GET_MOLECULE_LABEL, READING_PARAMETER_FILE, C
 import NX_MODULES
 import PARAM_FILE
 
-PWD = os.getcwd()
+PWD = os.getcwd() + '/'
 hline = "*****************************************************************\n" 
 
-# We prepare the folder where the dynamics will be restarted
+#-----------------------------------------------------------------------------------------------------------------------------------------------------#
+def COPY_FILES(folder_restart, ref_path, file_list):
+	# Create the folder
+	if isdir(folder_restart):
+		rmtree(folder_restart)
+	os.mkdir(folder_restart)
+	# copy list of files in a folder
+	for file_name in file_list:
+		copy(ref_path + file_name, folder_restart)
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------#
+def MOVE_FILES(folder_restart, file_list):
+	# Move list of files in a folder
+	for file_name in file_list:
+		move(PWD + file_name, folder_restart)
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def PREPARE_FOLDER_TO_RESTART_SHARC(folder_restart, correct_time, timestep, natoms, ref_path):
-	# Create the folders
-	os.system('rm -rf ' + folder_restart + ' && mkdir -p ' + folder_restart)
-	# Copy the files for the main folder
-	input_file      = ref_path + 'input  '
-	run_sh          = ref_path + 'run.sh '
-	plot_input	= ref_path + 'INPUT_plot_traj.in '
-	os.system('cp %s %s %s   %s' %(input_file, run_sh, plot_input, folder_restart))		# Copy in the restart folder
-	seed = random.randint(0, 20000000)							# Generate random seed
-	os.system("sed -i 's/rngseed xxxx/rngseed %i/g' %s/input" %(seed, folder_restart))	# Update random seed in the input file
+	COPY_FILES(folder_restart, ref_path, ['input', 'run.sh', 'INPUT_plot_traj.in', 'QM'])
+	seed = random.randint(0, 20000000)													# Generate random seed
+	os.system(f"sed -i 's/rngseed xxxx/rngseed {seed:i}/g' {folder_restart}/input")		# Update random seed in the input file
 	# We extract geom and veloc from the NX dynamics. They will be the initial value to restart the dynamics
 	# We obtain the following file: geom, geom.xyz, veloc
 	NX_MODULES.MAKE_GEOM_VELOC_NX(correct_time, timestep, natoms)
-	os.system('mv geom geom.xyz veloc  %s' %(folder_restart))				# mv the files from the current folder 
-	qm_folder	= ref_path + 'QM' 
-	os.system('cp -r %s  %s' %(qm_folder, folder_restart))					# Copy in the QM restart folder
-	os.chdir( '%s/QM/INIT_POINT' %(folder_restart))                     			# Go in INIT_POINT and run BAGEL
-	os.system('bash MAKE_BAGEL_TEMPLATE.sh %s/BAGEL_A_sa*.json %s/geom.xyz BAGEL' %(ref_path, folder_restart))
-	os.system("BAGEL BAGEL.json > BAGEL.out")
-	os.system("cp BAGEL.archive ../archive.1.init")
+	MOVE_FILES(folder_restart, ['geom', 'geom.xyz', 'veloc'])
+	os.chdir(f'{folder_restart}/QM/INIT_POINT')                     					# Go in INIT_POINT and run BAGEL
+	os.system(f'bash MAKE_BAGEL_TEMPLATE.sh {ref_path}/BAGEL_A_sa*.json {folder_restart}/geom.xyz BAGEL')
+	os.system('BAGEL BAGEL.json > BAGEL.out')
+	os.system('cp BAGEL.archive ../archive.1.init')
 #	os.chdir( '%s' %(folder_restart))
 #	os.system("nohup ./run.sh &")
-	return
 
+#-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def PREPARE_FOLDER_TO_RESTART_NX(folder_restart, correct_time, timestep, natoms, ref_path):
-	# Create the folder
-	os.system('rm -rf ' + folder_restart + ' && mkdir -p ' + folder_restart)
-	# Copy the files for the main folder
-	control_file	= ref_path + 'control.dyn'
-	job_ad_folder	= ref_path + 'JOB_AD'
-	plot_input	= ref_path + 'INPUT_plot_traj.in'
-	os.system('cp -r %s %s  %s' %(control_file, job_ad_folder, folder_restart))
+	COPY_FILES(folder_restart, ref_path, ['control.dyn', 'INPUT_plot_traj.in', 'JOB_AD'])
 	# We extract geom and veloc from the NX dynamics. They will be the initial value to restart the dynamics
 	NX_MODULES.MAKE_GEOM_VELOC_NX(correct_time, timestep, natoms)
 	# After thant geom, geom.xyz and veloc files are created we move them into the main folder
-	os.system('mv %s %s %s  %s' %('geom', 'geom.xyz', 'veloc', folder_restart))		# mv the files from the current folder
+	MOVE_FILES(folder_restart, ['geom', 'geom.xyz', 'veloc'])
 	os.chdir(folder_restart)
-	os.system('run-NX.sh moldyn.pl>moldyn.log &')
-	time.sleep(1)
-	os.system('cp %s %s/%s' %(plot_input, folder_restart, 'RESULTS'))
-	return
+	os.system(". load-NX.sh && nohup moldyn.pl > moldyn.log &")
 
+#-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def CHOOSE_FOLDER():
 	print('Please write your favourite folder name and be sure to have selected or SHARC or NX')
 	# The ref_path must contain the files that will be used as the template for the dynamics
@@ -72,6 +73,7 @@ def CHOOSE_FOLDER():
 	#ref_path = '/ddn/home/fzzq22/CODE_AND_SCRIPT/TEMPLATE_RESTARTs/NX_MP2/'
 	return folder_restart, ref_path
 
+#-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def main():
 	try:	
 		param_file = str(sys.argv[1])
@@ -82,6 +84,7 @@ def main():
 			sys.exit()
 		else:
 			print(f'The parameter are read from the file {PARAM_FILE.input_for_traj}')
+			print('\n')
 			print(hline)
     # --------------------------- READING THE PARAMETERS --------------------------------------------------	#
 	(binx, state_list, binx, binx, binx, binx,
@@ -102,7 +105,7 @@ def main():
     #correct_time	 = correct_time - 30
 	print(f"{PARAM_FILE.bcolors.OKCYAN} At time {correct_time:5.2f} we have D1 {D1:5.3f} which is the under the limit for threshold {PARAM_FILE.thresh_d1:5.3f}{PARAM_FILE.bcolors.ENDC}")
 	correct_time    = timebreak
-	print(f"{PARAM_FILE.bcolors.OKCYAN} Chosen time at {correct_time:5.2f}{PARAM_FILE.bcolors.ENDC}")
+	print(f"{PARAM_FILE.bcolors.OKCYAN} Restarting time: {correct_time:5.2f}{PARAM_FILE.bcolors.ENDC}")
 
 	folder_restart, ref_path = CHOOSE_FOLDER()
 	folder_restart  = f'{PWD}/../{folder_restart}_{str(correct_time)}' 
@@ -110,8 +113,8 @@ def main():
 	#PREPARE_FOLDER_TO_RESTART_SHARC(folder_restart, correct_time, timestep, natoms, ref_path)
 	PREPARE_FOLDER_TO_RESTART_NX(folder_restart, correct_time, timestep, natoms, ref_path)
 
+#-----------------------------------------------------------------------------------------------------------------------------------------------------#
 if __name__ == '__main__':
-	print('\n')
 	print(hline)
 	print('This script allow to restart trajectories from a previus NX dynamics')
 	print('\n')
