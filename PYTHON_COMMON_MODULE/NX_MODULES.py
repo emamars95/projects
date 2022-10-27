@@ -33,20 +33,38 @@ def GET_TIME_BASED_ON_D1(result_folder, min_time, max_time):
 	print("Returning D1: ", D1, " read at time: ", time, "\n")
 	return time, D1		
 		
-def MAKE_GEOM_VELOC_NX(time, time_step):
+def MAKE_GEOM_VELOC_NX(time, time_step, natoms):
 # In dyn.out the data relative to time step i are written AFTER the pattern $time(i)
 # Therefore we sed between $time(i) and $time(i+1) to get the vale of $time(i)
-        # Create the file form dyn.out for the time step before the crossing with d1 diagnostic lower than 0.065
-        pattern_1 = " " + str(time) + "0 fs"
-        pattern_2 = " " + str(time + time_step) + "0 fs"
-        os.system("sed -n '/" + pattern_1 + "/,/" + pattern_2 + "/p' dyn.out > out.tmp")
-        # Generate the geom file from the step we are interested in. Remove blank lines. Create xyz file using NX tool
-        os.system("sed -n '/New geometry:/,/New velocity:/{//!p;}' out.tmp | awk 'NF' > geom ")
-        os.system(". load-NX.sh && $NX/nx2xyz > geom.xyz")
-        # Generate the veloc file from the step we are interested in 
-        os.system("sed -n '/New velocity:/,/Time    Etot         Ekin/{//!p;}' out.tmp | awk 'NF' > veloc ")
-        os.system("rm -f out.tmp")
-        return
+    # Create the file form dyn.out for the time step before the crossing with d1 diagnostic lower than 0.065
+    #pattern_1 = " " + str(time) + "0 fs"
+    #pattern_2 = " " + str(time + time_step) + "0 fs"
+    #os.system("sed -n '/" + pattern_1 + "/,/" + pattern_2 + "/p' dyn.out > out.tmp")
+    # Generate the geom file from the step we are interested in. Remove blank lines. Create xyz file using NX tool
+    #os.system("sed -n '/New geometry:/,/New velocity:/{//!p;}' out.tmp | awk 'NF' > geom ")
+    #os.system(". load-NX.sh && $NX/nx2xyz > geom.xyz")
+    # Generate the veloc file from the step we are interested in 
+    #os.system("sed -n '/New velocity:/,/Time    Etot         Ekin/{//!p;}' out.tmp | awk 'NF' > veloc ")
+    #os.system("rm -f out.tmp")
+	file_geom = open('geom', 'w')
+	file_veloc = open('veloc', 'w')
+	with open('dyn.out', 'r') as fp:
+		for line in fp:
+			if f'{str(time)}0 fs' in line:
+				break									# Find the time requested in dyn.out
+		for _ in range(3):								# skip three lines
+			fp.readline()
+		for _ in range(natoms):							# Write geom file
+			file_geom.write(fp.readline)
+		for _ in range(2):								# skip two lines
+			fp.readline()
+		for _ in range(natoms):							# Write veloc
+			file_veloc.write(fp.readline)
+	file_geom.close()
+	file_veloc.close()
+	# Convert NX format in xyz format
+	os.system(". load-NX.sh && $NX/nx2xyz > geom.xyz")
+	return
 
 # Chose random trajectories from a bunch s
 def LABEL_TRAJ(PWD, wanted_traj, total_traj):
