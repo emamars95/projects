@@ -203,12 +203,11 @@ def ROUTINE_DYNAMICS(allname, summary_file, traj_file, folder):
     # For the folder present in PWD we enter sequentially in each of them
     for traj_name in allname:
         traj_folder = f'{PWD}/{traj_name}/' 
-        result_folder = traj_folder + folder
-        print(result_folder)
+        result_folder = glob.glob(traj_folder + folder)
         if isdir(result_folder):                        # If some dynamics has been restarted then we check the dynamics output
             print(traj_name)
             os.chdir(traj_folder)                 
-            summary, data, data_restart = CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder)    
+            summary, data, data_restart = CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder[0])    
             summary_file.write(summary + '\n')    
             traj_file.write(data + '\n')           
     traj_file.close()      
