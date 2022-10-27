@@ -32,16 +32,16 @@ def TOT_ENERGY_CHECK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY):
 	E_GAP	= abs(tot_energy_step_2 - tot_energy_step_1) 			# Energies are given in eV
 # FIRST CONDITION to break:   GAP in total energy LARGER THAN 
 	if E_GAP > 0.2:
-		BREAKREASON     = "GAP"						# We compare the enrgy between the current and previous step
+		break_reason     = "GAP"						# We compare the enrgy between the current and previous step
 # SECOND CONDITION to break:  DRIFT LARGER THAN
 	elif abs(INIT_TOT_ENERGY - tot_energy_step_2) > 0.3:                  	# Check the drift comparing with the initial total energy
-		BREAKREASON     = "DRIFT"
+		break_reason     = "DRIFT"
 # If there is a small gap with warn the user
 	elif E_GAP > Thresh_EGAP:
-		BREAKREASON     = "WARNING"
+		break_reason     = "WARNING"
 	else:
-		BREAKREASON 	= False
-	return BREAKREASON, E_GAP
+		break_reason 	= False
+	return break_reason, E_GAP
 
 #----------------------------------------------------------------------------------------------------------------------------#
 def PRINT_WARNING(warning, E_GAP, time):
@@ -49,33 +49,33 @@ def PRINT_WARNING(warning, E_GAP, time):
 	print(f"{PARAM_FILE.bcolors.WARNING}%5.2f eV discontinuity at time: %5.2f fs{PARAM_FILE.bcolors.ENDC}" %(E_GAP, time))
 	return warning
 
-def PRINT_BREAK(E_GAP, TIME, BREAKREASON):
-	print (f"{PARAM_FILE.bcolors.FAIL}%5.2f eV discontinuity. Dynamics stoped at: %5.2f fs due %s {PARAM_FILE.bcolors.ENDC}" %(E_GAP, TIME, BREAKREASON))
+def PRINT_BREAK(E_GAP, TIME, break_reason):
+	print (f"{PARAM_FILE.bcolors.FAIL}%5.2f eV discontinuity. Dynamics stoped at: %5.2f fs due %s {PARAM_FILE.bcolors.ENDC}" %(E_GAP, TIME, break_reason))
 	os.system("touch %s" %(PARAM_FILE.error_dyn))
 	return
 
-def CHECK_BREAK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY, warning, TIME, BREAKREASON):
-	if BREAKREASON == "SWITCH":							tobreak = True;
+def CHECK_BREAK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY, warning, TIME, break_reason):
+	if break_reason == "SWITCH":							tobreak = True;
 	else:
-		BREAKREASON, E_GAP      = TOT_ENERGY_CHECK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY)
-		if not BREAKREASON:					# If there is no gap we update the i-1 record
+		break_reason, E_GAP      = TOT_ENERGY_CHECK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY)
+		if not break_reason:					# If there is no gap we update the i-1 record
 			tot_energy_step_1       = tot_energy_step_2; 			tobreak	= False
-		elif (BREAKREASON == "WARNING"):
+		elif (break_reason == "WARNING"):
 			warning 	= PRINT_WARNING(warning, E_GAP, TIME)
 			if warning >= 5: 
-				PRINT_BREAK(E_GAP, TIME, BREAKREASON);			tobreak = True
+				PRINT_BREAK(E_GAP, TIME, break_reason);			tobreak = True
 			else: 
 				tot_energy_step_1 = tot_energy_step_2;			tobreak = False
 		else: 
-			PRINT_BREAK(E_GAP, TIME, BREAKREASON); 				tobreak = True; 
-	return tot_energy_step_1, tot_energy_step_2, warning, TIME, BREAKREASON, tobreak
+			PRINT_BREAK(E_GAP, TIME, break_reason); 				tobreak = True; 
+	return tot_energy_step_1, tot_energy_step_2, warning, TIME, break_reason, tobreak
 
 #----------------------------------------------------------------------------------------------------------------------------#
 def TRAJECTORY_BREAK_SH(EnergyFile, nmstates, timestep):
 	INIT_TOT_ENERGY         = 0.0;	tot_energy_step_1       = 0.0;	tot_energy_step_2       = 0.0; 	warning			= 0
 	with open(EnergyFile, "r") as fp:
 		for i, lisline in enumerate(fp):
-			BREAKREASON = False
+			break_reason = False
 			lisline = lisline.split()
 			if i == 5: 					#Line six is the first point of the dynamics t = 0 fs
 				tot_energy_step_1	= float(lisline[6])		# Energy in eV.
@@ -83,17 +83,17 @@ def TRAJECTORY_BREAK_SH(EnergyFile, nmstates, timestep):
 			if (i > 5) and (lisline[0] != "#"):		# '#' occurs in out file when the traj HOPs. We want skip that line
 				TIME = float(lisline[1])
 				tot_energy_step_2	= float(lisline[6])		# Energy in eV.
-				(tot_energy_step_1, tot_energy_step_2, warning, TIME, BREAKREASON,
-					tobreak) = CHECK_BREAK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY, warning, TIME, BREAKREASON)
+				(tot_energy_step_1, tot_energy_step_2, warning, TIME, break_reason,
+					tobreak) = CHECK_BREAK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY, warning, TIME, break_reason)
 				if tobreak: break
-	return TIME, BREAKREASON
+	return TIME, break_reason
 
 #----------------------------------------------------------------------------------------------------------------------------#
 def TRAJECTORY_BREAK_NX(EnergyFile, nmstates, timestep):
 	INIT_TOT_ENERGY		= 0.0; 	tot_energy_step_1	= 0.0;	tot_energy_step_2	= 0.0;  warning                 = 0
 	with open(EnergyFile,"r") as fp:
 		for i, lisline in enumerate(fp):
-			BREAKREASON = False
+			break_reason = False
 			lisline	= lisline.split(); TIME = float(lisline[0])
 			if i == 0: 					# Line 0 is the first point of the dynamics t = 0 fs
 				# Here we multiply for the conversion factor to get the energies in eV
@@ -105,14 +105,14 @@ def TRAJECTORY_BREAK_NX(EnergyFile, nmstates, timestep):
 				# The total energy for the actual line is saved in the variable
 				tot_energy_step_2 	= float(lisline[nmstates + 2]) * PARAM_FILE.ev_au_conv
 				# Here we check the energy discontinuities and if there are some drift with trajectories
-				BREAKREASON, E_GAP 	= TOT_ENERGY_CHECK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY) 
+				break_reason, E_GAP 	= TOT_ENERGY_CHECK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY) 
 # It is necessary for TDDFT and ADC(2) dynamics when we can have a swap of S0 and S1 excited state. Clearly the dynamics beyond is not valid anymore.
 # THIRD CONDITION: (S0 energy - S1 energy) > 0.0 ==> S1 and S0 cross 
-				if float(lisline[1]) - float(lisline[2]) > 0:   BREAKREASON	= "SWITCH"; 	
-				(tot_energy_step_1, tot_energy_step_2, warning, TIME, BREAKREASON,
-					 tobreak) = CHECK_BREAK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY, warning, TIME, BREAKREASON)
+				if float(lisline[1]) - float(lisline[2]) > 0:   break_reason	= "SWITCH"; 	
+				(tot_energy_step_1, tot_energy_step_2, warning, TIME, break_reason,
+					 tobreak) = CHECK_BREAK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY, warning, TIME, break_reason)
 				if tobreak: break
-	return TIME, BREAKREASON, s0_ene/PARAM_FILE.ev_au_conv
+	return TIME, break_reason, s0_ene/PARAM_FILE.ev_au_conv
 
 #----------------------------------------------------------------------------------------------------------------------------#
 def GET_MOLECULE_LABEL(template_geo):
@@ -261,15 +261,15 @@ def WRITE_NX_STATE_GP(nstates, state_list, s0_ene, t_label, datafile):
 	gnuplot_state = f' plot "{datafile}" u {t_label}:((${nstates+3} - {s0_ene:9.5f})*{PARAM_FILE.ev_au_conv}) title "Total Energy" lw {lw_1:3.1f} lc rgbcolor "#000000" w l, \\\n'
 	for i in range(state_list[0]):
 		if singlets < 4:						# The first 4 singlets are displyed in blue
-			gnuplot_state += f' "" u {t_label}:((${i+2} - {s0_ene:9.5f})*{PARAM_FILE.ev_au_conv}) title "S_{i}" lw {lw_2:3.1f} lt 1 lc rgb "{PARAM_FILE.shadeofblue[singlets]}" w l, \\\n'
+			gnuplot_state += f'  "" u {t_label}:((${i+2} - {s0_ene:9.5f})*{PARAM_FILE.ev_au_conv}) title "S_{i}" lw {lw_2:3.1f} lt 1 lc rgb "{PARAM_FILE.shadeofblue[singlets]}" w l, \\\n'
 		else:									# The remaining are simply in grey without label
-			gnuplot_state += f' "" u {t_label}:((${i+2} - {s0_ene:9.5f})*{PARAM_FILE.ev_au_conv}) notitle lw {lw_2:3.1f} lt 1 lc rgb "grey" w l, \\\n'
+			gnuplot_state += f'  "" u {t_label}:((${i+2} - {s0_ene:9.5f})*{PARAM_FILE.ev_au_conv}) notitle lw {lw_2:3.1f} lt 1 lc rgb "grey" w l, \\\n'
 		singlets += 1
 	for i in range(triplets, state_list[2] + 1):
 		if triplets < 4: 
-			gnuplot_state += f' "" u {t_label}:((${i+2} - {s0_ene:9.5f})*{PARAM_FILE.ev_au_conv}) title "T_{i}" lw {lw_2:3.1f} lt 1 lc rgb "{PARAM_FILE.shadeofgreen[triplets]}" w l, \\\n'
+			gnuplot_state += f'  "" u {t_label}:((${i+2} - {s0_ene:9.5f})*{PARAM_FILE.ev_au_conv}) title "T_{i}" lw {lw_2:3.1f} lt 1 lc rgb "{PARAM_FILE.shadeofgreen[triplets]}" w l, \\\n'
 		else:
-			gnuplot_state += f' "" u {t_label}:((${i+2} - {s0_ene:9.5f})*{PARAM_FILE.ev_au_conv}) notitle lw {lw_2:3.1f} lt 1 lc rgb "grey" w l, \\\n'
+			gnuplot_state += f'  "" u {t_label}:((${i+2} - {s0_ene:9.5f})*{PARAM_FILE.ev_au_conv}) notitle lw {lw_2:3.1f} lt 1 lc rgb "grey" w l, \\\n'
 		triplets	+=1
 	# Plot the running trajecotry in back empty circles
 	gnuplot_state += f' "" u {t_label}:((${nstates+2} - {s0_ene:9.5f})*{PARAM_FILE.ev_au_conv}) notitle lw {lw_1:3.1f} lc rgbcolor "#000000" pt 6 ps 2.0 w p\n\n'
@@ -290,16 +290,16 @@ def WRITE_SH_STATE_GP(nmstates, state_list, t_label, datafile, time_restart, res
 	for i in range(nmstates):
 		if int(float(lisline[4 + nmstates + i])) == 0 :				# The spin of the i-th state is zero (singlet)
 			if singlets < 4:				# The first 4 singlets are displyed in blue 
-				gnuplot_state += f' "" u {t_label}:{5+i} title "S_{singlets}" lw {lw_2:6.2f} lt 1 lc rgb "{PARAM_FILE.shadeofblue[singlets]}" w l	, \\\n'
+				gnuplot_state += f'  "" u {t_label}:{5+i} title "S_{singlets}" lw {lw_2:6.2f} lt 1 lc rgb "{PARAM_FILE.shadeofblue[singlets]}" w l	, \\\n'
 			else:						# The remaining are simply in grey without label
-				gnuplot_state += f' "" u {t_label}:{5+i} notitle              lw {lw_2:6.2f} lt 1 lc rgb "grey" w l	, \\\n'
+				gnuplot_state += f'  "" u {t_label}:{5+i} notitle              lw {lw_2:6.2f} lt 1 lc rgb "grey" w l	, \\\n'
 			singlets	      += 1
 
 		if int(float(lisline[4 + nmstates + i])) == 2 :				# The spin of the i-th state is two (triplets)
 			if (triplets < state_list[2]):							# state_list[2] = Number of triplet states
-				gnuplot_state += f' "" u {t_label}:{5+i} title "T_{triplets + 1}" lw {lw_2:6.2f} lt 1 lc rgb "{PARAM_FILE.shadeofgreen[singlets]}" w l	, \\\n'
+				gnuplot_state += f'  "" u {t_label}:{5+i} title "T_{triplets + 1}" lw {lw_2:6.2f} lt 1 lc rgb "{PARAM_FILE.shadeofgreen[singlets]}" w l	, \\\n'
 			else: 													# Plot the title only for one of the three components of the triplet states
-				gnuplot_state += f' "" u {t_label}:{5+i} notitle                  lw {lw_2:6.2f} lt 1 lc rgb "{PARAM_FILE.shadeofgreen[singlets]}" w l	, \\\n'
+				gnuplot_state += f'  "" u {t_label}:{5+i} notitle                  lw {lw_2:6.2f} lt 1 lc rgb "{PARAM_FILE.shadeofgreen[singlets]}" w l	, \\\n'
 			triplets	      += 1
 # After three triplet (0,1,2) we want reinitilize the counters. Triplet are printed T1x, T2x, ..., T1y, T2y, ..., T1z, ...
 # After printing the label for the first three we can stop printing title (stoptitle is initialized at 1 at this point and no other title are printed) 
@@ -324,12 +324,12 @@ def WRITE_SH_STATE_GP_RESTARTED(state_list, time_restart, lisline):
 	# time_restart will be exactly the same for both calculation (we will have the line conciding at the same point).
 	# print (TIME_END_OF_DYN, s1_ene, scaling, lisline[5])					# !!5 is the index for energy S1!!
 	for i in range(state_list[0]):	# Here the number the singlet but could be a sub set of the number of electronic states in the NX dynamics
-		gnuplot_state += f' "{datafile}" u 1:((${i+2} - {scaling:9.5f})*{PARAM_FILE.ev_au_conv}) notitle lw {lw_2:3.1f} lt 1 lc rgb "{PARAM_FILE.shadeofgrey[singlets]}" w l, \\\n'
+		gnuplot_state += f'  "{datafile}" u 1:((${i+2} - {scaling:9.5f})*{PARAM_FILE.ev_au_conv}) notitle lw {lw_2:3.1f} lt 1 lc rgb "{PARAM_FILE.shadeofgrey[singlets]}" w l, \\\n'
 		singlets   += 1
 	return gnuplot_state
 
 #----------------------------------------------------------------------------------------------------------------------------#
-def WRITE_COORDS_AND_BREAKLINE(rangeymax, rangey2min, rangey2max, positionlabel2, TIMEBREAK, BREAKREASON, input_coord, gnuplot_time_label, label_molecule):
+def WRITE_COORDS_AND_BREAKLINE(rangeymax, rangey2min, rangey2max, positionlabel2, time_break, break_reason, input_coord, gnuplot_time_label, label_molecule):
 #Plot the second part with multipot
 	if 	label_molecule == "HPP":
 		gnuplot_coord, y2label, index = WRITE_GEOMETRICAL_CORDINATES_HPP_GP(input_coord, gnuplot_time_label)
@@ -347,9 +347,10 @@ def WRITE_COORDS_AND_BREAKLINE(rangeymax, rangey2min, rangey2max, positionlabel2
 	gnuplot_final += '  set y2label %s\n  set y2tics\n  set key at %s\n  set y2range[0.75:%s]\n' 	% (y2label, positionlabel2, rangey2max)
 	gnuplot_final += gnuplot_coord         								#string is the plot associated with the coordinates analysis
 #Finally we add a vertical line to indicate at which time the dynamics is not valid anymore
-	if BREAKREASON != False :
+	if break_reason != False :
 		gnuplot_final += '\n  set key bottom \n'
-		gnuplot_final += '  set parametric\n  plot [t=0:%5.3f] %5.3f,t w l lw 2.0 lt 1 lc rgbcolor "#FF0000" title "%s"' % (rangeymax, TIMEBREAK, BREAKREASON)
+		gnuplot_final += '  set parametric\n  plot [t=0:%5.3f] %5.3f,t w l lw 2.0 lt 1 lc rgbcolor "#FF0000" title "%s"' % (rangeymax, time_break, break_reason)
+	gnuplot_final += 'unset multiplot'
 	return gnuplot_final
 
 
