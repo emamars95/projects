@@ -105,7 +105,7 @@ def CHECK_REACTIVITY(traj_name, result_folder, time_traj, summary, data, data_re
         # Here we have to check at which molecule we are dealing with. Depending on the molecule the geometrical coordinates can be     #
         # different and therefore, we have to adopt different procedure.                                                                #
         *binx, template_geo = READING_PARAMETER_FILE("%s/%s" %(result_folder, PARAM_FILE.input_for_traj))
-        which_molecule      = GET_MOLECULE_LABEL(template_geo)
+        which_molecule, molecule_class = GET_MOLECULE_LABEL(template_geo)
         # Now in which_molecule we have the label of the molecule we are dealing with. 
         if   which_molecule == "HPP":
                 summary, data = CHECK_REACTIVITY_HPP(result_folder, summary, data)
