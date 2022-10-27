@@ -42,8 +42,7 @@ def MAKE_GEOM_VELOC_NX(time, time_step):
         os.system("sed -n '/" + pattern_1 + "/,/" + pattern_2 + "/p' dyn.out > out.tmp")
         # Generate the geom  file from the step we are interested in 
         os.system("sed -n '/New geometry:/,/New velocity:/{//!p;}' out.tmp | awk 'NF' > geom ")
-        os.system(". load-NX.sh && echo $NX")
-        os.system("$NX/nx2xyz > geom.xyz")
+        os.system(". load-NX.sh && $NX/nx2xyz > geom.xyz")
         # Generate the veloc file from the step we are interested in 
         os.system("sed -n '/New velocity:/,/time    Etot         Ekin/{//!p;}' out.tmp | awk 'NF' > veloc ")
         os.system("rm -f out.tmp")
