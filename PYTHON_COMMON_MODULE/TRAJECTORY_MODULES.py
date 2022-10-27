@@ -23,10 +23,7 @@ def COUNTING_STATES(state_list):
 def READING_PARAMETER_FILE(parameter_file_name):
 	with open(parameter_file_name, "r") as parameter_file:
 		data = parameter_file.read()
-	print(data)
 	dictionary = loads(data)
-	print(dictionary)
-	sys.exit()
 	return dictionary
 			
 #----------------------------------------------------------------------------------------------------------------------------#
