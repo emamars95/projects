@@ -19,7 +19,6 @@ def COPY_FILES(folder_restart, ref_path, file_list):
 	# Create the folder
 	if isdir(folder_restart):
 		rmtree(folder_restart)
-		print('removing folder')
 	os.mkdir(folder_restart)
 	# copy list of files in a folder
 	for file_name in file_list:
@@ -59,7 +58,7 @@ def PREPARE_FOLDER_TO_RESTART_NX(folder_restart, correct_time, timestep, natoms,
 	# After thant geom, geom.xyz and veloc files are created we move them into the main folder
 	MOVE_FILES(folder_restart, ['geom', 'geom.xyz', 'veloc'])
 	os.chdir(folder_restart)
-	os.system(". load-NX.sh && nohup moldyn.pl > moldyn.log &")
+	os.system(". load-NX.sh && nohup $NX/moldyn.pl > moldyn.log &")
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def CHOOSE_FOLDER():
