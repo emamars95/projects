@@ -11,6 +11,7 @@ import NX_MODULES
 import PARAM_FILE
 
 PWD = os.getcwd()
+hline = "*****************************************************************\n" 
 
 # We prepare the folder where the dynamics will be restarted
 def PREPARE_FOLDER_TO_RESTART_SHARC(folder_restart, correct_time, timestep, natoms, ref_path):
@@ -81,12 +82,13 @@ def main():
 			sys.exit()
 		else:
 			print(f'The parameter are read from the file {PARAM_FILE.input_for_traj}')
+			print(hline)
     # --------------------------- READING THE PARAMETERS --------------------------------------------------	#
-	(calculation, state_list, binx, binx, binx, binx,
+	(binx, state_list, binx, binx, binx, binx,
     	binx, binx, binx, timestep, template_geo) = READING_PARAMETER_FILE(param_file)
     # -----------------------------------------------------------------------------------------------------	#
-	which_molecule = GET_MOLECULE_LABEL(template_geo)
-	natoms = PARAM_FILE.which_molecule.natoms
+	which_molecule, class_molecule = GET_MOLECULE_LABEL(template_geo)
+	natoms = class_molecule.natoms
     # Compute the total number of state used in NX along the dynamics				 	#
 	nmstates, nstates = COUNTING_STATES(state_list)
     # Compute the time at which the dynamics is not anymore valid, i.e. crossing between S0 and S1		#
@@ -109,6 +111,8 @@ def main():
 	PREPARE_FOLDER_TO_RESTART_NX(folder_restart, correct_time, timestep, natoms, ref_path)
 
 if __name__ == '__main__':
+	print(hline)
 	print('This script allow to restart trajectories from a previus NX dynamics')
+	print(hline)
 	main()
 

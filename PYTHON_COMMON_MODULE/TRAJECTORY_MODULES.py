@@ -35,21 +35,21 @@ def READING_PARAMETER_FILE(PARAMETER_FILE_NAME):
 		INPUT_COORD             = PARAMETER_FILE.readline()
 		# The time step of the dynamics
 		TIMESTEP                = float(PARAMETER_FILE.readline())
-		TEMPLATE_GEO            = PARAMETER_FILE.readline().rstrip()
-		if int( len(TEMPLATE_GEO) ) == 0:
+		template_geo            = PARAMETER_FILE.readline().rstrip()
+		if int( len(template_geo) ) == 0:
 			raise ValueError ('The parameter file lacks some records!')
 		return (CALCULATION, STATE_LIST, rangexmin, rangexmax, rangeymin, rangeymax, rangey2max,
-				 outname, INPUT_COORD, TIMESTEP, TEMPLATE_GEO)
+				 outname, INPUT_COORD, TIMESTEP, template_geo)
 
 #----------------------------------------------------------------------------------------------------------------------------#
-def TOT_ENERGY_CHECK(TOT_ENERGY_STEP_1, TOT_ENERGY_STEP_2, INIT_TOT_ENERGY):
+def TOT_ENERGY_CHECK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY):
 	Thresh_EGAP     = 0.05 							# eV
-	E_GAP	= abs(TOT_ENERGY_STEP_2 - TOT_ENERGY_STEP_1) 			# Energies are given in eV
+	E_GAP	= abs(tot_energy_step_2 - tot_energy_step_1) 			# Energies are given in eV
 # FIRST CONDITION to break:   GAP in total energy LARGER THAN 
 	if E_GAP > 0.2:
 		BREAKREASON     = "GAP"						# We compare the enrgy between the current and previous step
 # SECOND CONDITION to break:  DRIFT LARGER THAN
-	elif abs(INIT_TOT_ENERGY - TOT_ENERGY_STEP_2) > 0.3:                  	# Check the drift comparing with the initial total energy
+	elif abs(INIT_TOT_ENERGY - tot_energy_step_2) > 0.3:                  	# Check the drift comparing with the initial total energy
 		BREAKREASON     = "DRIFT"
 # If there is a small gap with warn the user
 	elif E_GAP > Thresh_EGAP:
@@ -69,43 +69,43 @@ def PRINT_BREAK(E_GAP, TIME, BREAKREASON):
 	os.system("touch %s" %(PARAM_FILE.error_dyn))
 	return
 
-def CHECK_BREAK(TOT_ENERGY_STEP_1, TOT_ENERGY_STEP_2, INIT_TOT_ENERGY, warning, TIME, BREAKREASON):
+def CHECK_BREAK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY, warning, TIME, BREAKREASON):
 	if BREAKREASON == "SWITCH":							tobreak = True;
 	else:
-		BREAKREASON, E_GAP      = TOT_ENERGY_CHECK(TOT_ENERGY_STEP_1, TOT_ENERGY_STEP_2, INIT_TOT_ENERGY)
+		BREAKREASON, E_GAP      = TOT_ENERGY_CHECK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY)
 		if not BREAKREASON:					# If there is no gap we update the i-1 record
-			TOT_ENERGY_STEP_1       = TOT_ENERGY_STEP_2; 			tobreak	= False
+			tot_energy_step_1       = tot_energy_step_2; 			tobreak	= False
 		elif (BREAKREASON == "WARNING"):
 			warning 	= PRINT_WARNING(warning, E_GAP, TIME)
 			if warning >= 5: 
 				PRINT_BREAK(E_GAP, TIME, BREAKREASON);			tobreak = True
 			else: 
-				TOT_ENERGY_STEP_1 = TOT_ENERGY_STEP_2;			tobreak = False
+				tot_energy_step_1 = tot_energy_step_2;			tobreak = False
 		else: 
 			PRINT_BREAK(E_GAP, TIME, BREAKREASON); 				tobreak = True; 
-	return TOT_ENERGY_STEP_1, TOT_ENERGY_STEP_2, warning, TIME, BREAKREASON, tobreak
+	return tot_energy_step_1, tot_energy_step_2, warning, TIME, BREAKREASON, tobreak
 
 #----------------------------------------------------------------------------------------------------------------------------#
 def TRAJECTORY_BREAK_SH(EnergyFile, nmstates, TIMESTEP):
-	INIT_TOT_ENERGY         = 0.0;	TOT_ENERGY_STEP_1       = 0.0;	TOT_ENERGY_STEP_2       = 0.0; 	warning			= 0
+	INIT_TOT_ENERGY         = 0.0;	tot_energy_step_1       = 0.0;	tot_energy_step_2       = 0.0; 	warning			= 0
 	with open(EnergyFile, "r") as fp:
 		for i, lisline in enumerate(fp):
 			BREAKREASON = False
 			lisline = lisline.split()
 			if i == 5: 					#Line six is the first point of the dynamics t = 0 fs
-				TOT_ENERGY_STEP_1	= float(lisline[6])		# Energy in eV.
-				INIT_TOT_ENERGY		= TOT_ENERGY_STEP_1		# We save the initial energy to check drifts
+				tot_energy_step_1	= float(lisline[6])		# Energy in eV.
+				INIT_TOT_ENERGY		= tot_energy_step_1		# We save the initial energy to check drifts
 			if (i > 5) and (lisline[0] != "#"):		# '#' occurs in out file when the traj HOPs. We want skip that line
 				TIME = float(lisline[1])
-				TOT_ENERGY_STEP_2	= float(lisline[6])		# Energy in eV.
-				(TOT_ENERGY_STEP_1, TOT_ENERGY_STEP_2, warning, TIME, BREAKREASON,
-					tobreak) = CHECK_BREAK(TOT_ENERGY_STEP_1, TOT_ENERGY_STEP_2, INIT_TOT_ENERGY, warning, TIME, BREAKREASON)
+				tot_energy_step_2	= float(lisline[6])		# Energy in eV.
+				(tot_energy_step_1, tot_energy_step_2, warning, TIME, BREAKREASON,
+					tobreak) = CHECK_BREAK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY, warning, TIME, BREAKREASON)
 				if tobreak: break
 	return TIME, BREAKREASON
 
 #----------------------------------------------------------------------------------------------------------------------------#
 def TRAJECTORY_BREAK_NX(EnergyFile, nmstates, TIMESTEP):
-	INIT_TOT_ENERGY		= 0.0; 	TOT_ENERGY_STEP_1	= 0.0;	TOT_ENERGY_STEP_2	= 0.0;  warning                 = 0
+	INIT_TOT_ENERGY		= 0.0; 	tot_energy_step_1	= 0.0;	tot_energy_step_2	= 0.0;  warning                 = 0
 	with open(EnergyFile,"r") as fp:
 		for i, lisline in enumerate(fp):
 			BREAKREASON = False
@@ -113,67 +113,68 @@ def TRAJECTORY_BREAK_NX(EnergyFile, nmstates, TIMESTEP):
 			if i == 0: 					# Line 0 is the first point of the dynamics t = 0 fs
 				# Here we multiply for the conversion factor to get the energies in eV
 				# nmstates+2 line with total energy, consider the array in python start from 0
-				TOT_ENERGY_STEP_1	= float(lisline[nmstates + 2]) * PARAM_FILE.ev_au_conv
-				INIT_TOT_ENERGY		= TOT_ENERGY_STEP_1            			# We save the total energy at the beginning
+				tot_energy_step_1	= float(lisline[nmstates + 2]) * PARAM_FILE.ev_au_conv
+				INIT_TOT_ENERGY		= tot_energy_step_1            			# We save the total energy at the beginning
 				INIT_S0_ENERGY		= float(lisline[1]) * PARAM_FILE.ev_au_conv   	# NX save energy in a.u and not scaled respect the intial point
 			if (i > 0):
 				# The total energy for the actual line is saved in the variable
-				TOT_ENERGY_STEP_2 	= float(lisline[nmstates + 2]) * PARAM_FILE.ev_au_conv
+				tot_energy_step_2 	= float(lisline[nmstates + 2]) * PARAM_FILE.ev_au_conv
 				# Here we check the energy discontinuities and if there are some drift with trajectories
-				BREAKREASON, E_GAP 	= TOT_ENERGY_CHECK(TOT_ENERGY_STEP_1, TOT_ENERGY_STEP_2, INIT_TOT_ENERGY) 
+				BREAKREASON, E_GAP 	= TOT_ENERGY_CHECK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY) 
 # It is necessary for TDDFT and ADC(2) dynamics when we can have a swap of S0 and S1 excited state. Clearly the dynamics beyond is not valid anymore.
 # THIRD CONDITION: (S0 energy - S1 energy) > 0.0 ==> S1 and S0 cross 
 				if float(lisline[1]) - float(lisline[2]) > 0:   BREAKREASON	= "SWITCH"; 	
-				(TOT_ENERGY_STEP_1, TOT_ENERGY_STEP_2, warning, TIME, BREAKREASON,
-					 tobreak) = CHECK_BREAK(TOT_ENERGY_STEP_1, TOT_ENERGY_STEP_2, INIT_TOT_ENERGY, warning, TIME, BREAKREASON)
+				(tot_energy_step_1, tot_energy_step_2, warning, TIME, BREAKREASON,
+					 tobreak) = CHECK_BREAK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY, warning, TIME, BREAKREASON)
 				if tobreak: break
 	return TIME, BREAKREASON, INIT_S0_ENERGY/27.2114
 
 #----------------------------------------------------------------------------------------------------------------------------#
-def GET_MOLECULE_LABEL(TEMPLATE_GEO):
-	if   "HPP" 	in TEMPLATE_GEO:
-		LABEL		= "HPP" 
-	elif "HPAC" 	in TEMPLATE_GEO:
-        	LABEL           = "HPAC"
-	elif "PYRONE" 	in TEMPLATE_GEO:
-        	LABEL           = "PYRONE"
-	elif "FORMALDEHYDE" in TEMPLATE_GEO:
-        	LABEL           = "FORMALDEHYDE"
-	elif "ACROLEIN" in TEMPLATE_GEO:
-        	LABEL           = "ACROLEIN"
-	elif "BH3NH3" 	in TEMPLATE_GEO:
-        	LABEL           = "BH3NH3"
-	elif "Pyridine" in TEMPLATE_GEO:
-		LABEL           = "Pyridine"
-	elif "Nucleic_Acid" in TEMPLATE_GEO:
-		LABEL		= "Nucleic_Acid"
+def GET_MOLECULE_label(template_geo):
+	if   "HPP" 	in template_geo:
+		label = "HPP" 
+	elif "HPAC" 	in template_geo:
+		label = "HPAC"
+	elif "PYRONE" 	in template_geo:
+		label = "PYRONE"
+	elif "FORMALDEHYDE" in template_geo:
+		label = "FORMALDEHYDE"
+	elif "ACROLEIN" in template_geo:
+		label = "ACROLEIN"
+	elif "BH3NH3" 	in template_geo:
+		label = "BH3NH3"
+		class_molecule = PARAM_FILE.BH3NH3 
+	elif "Pyridine" in template_geo:
+		label = "Pyridine"
+	elif "Nucleic_Acid" in template_geo:
+		label = "Nucleic_Acid"
 	else:
-		print(LABEL)
-		raise ValueError ('Label not recognized')
-	return LABEL
+		print(label)
+		raise ValueError ('label not recognized')
+	return label, class_molecule
 
 #----------------------------------------------------------------------------------------------------------------------------#	
-def MAKE_GEOMETRICAL_COORDINATES(TIMESTEP, TEMPLATE_GEO, LABEL_MOLECULE):
+def MAKE_GEOMETRICAL_COORDINATES(TIMESTEP, template_geo, label_MOLECULE):
     TMP_COORDINATES_FILE_NAME	= "COORDINATES.out"
     os.system("cp -f dyn.xyz output.xyz")						# Python script read the file output.xyz
     programgeo                  = '/nobackup/zcxn55/SOFTWARE/SHARC-2.1-corr-edc/bin/geo.py'
-    cmd = "python2 $SHARC/%s -t %5.2f < %s > %s" %(programgeo, TIMESTEP, TEMPLATE_GEO, TMP_COORDINATES_FILE_NAME )
+    cmd = "python2 $SHARC/%s -t %5.2f < %s > %s" %(programgeo, TIMESTEP, template_geo, TMP_COORDINATES_FILE_NAME )
     os.system(cmd)								# The tmp coordinate file is created
 
-    if LABEL_MOLECULE == "HPP" or LABEL_MOLECULE == "HPAC":
-        LABEL		= "   time\t\tO-O\t\t\tO-H\t\t\tO--H\t\tC-C\t\t\tC=0\t\tC=O pyramid\t\tC-O\t\td 3 1 4 10\t\td 2 1 4 10\t\tC1--O11"
-    elif LABEL_MOLECULE == "PYRONE":
-        LABEL           = "   time\t\tC=0"
-    elif LABEL_MOLECULE == "FORMALDEHYDE":
-        LABEL           = "   time\t\tC=0"
-    elif LABEL_MOLECULE == "ACROLEIN":
-        LABEL           = "   time\t\tC=0"
-    elif LABEL_MOLECULE == "BH3NH3":
-        LABEL           = "   time\t\t\tB-N\t\t\tN-H\t\tN-H\t\t\tN-H\t\tB-H\t\t\tB-H\t\tB-H\t\tNH3 pyramid\t\tBH3 pyramid"
-    elif LABEL_MOLECULE == "Pyridine":
-        LABEL           = "   time\t\t\tB-N\t\t\tB-H\t\t\tB-H\t\tB-H\t\tBH3 pyramid"
-    elif LABEL_MOLECULE == "Nucleic_Acid":
-        LABEL           = "   time\t\tC-O\t\t\tC-C"
+    if label_MOLECULE == "HPP" or label_MOLECULE == "HPAC":
+        label		= "   time\t\tO-O\t\t\tO-H\t\t\tO--H\t\tC-C\t\t\tC=0\t\tC=O pyramid\t\tC-O\t\td 3 1 4 10\t\td 2 1 4 10\t\tC1--O11"
+    elif label_MOLECULE == "PYRONE":
+        label           = "   time\t\tC=0"
+    elif label_MOLECULE == "FORMALDEHYDE":
+        label           = "   time\t\tC=0"
+    elif label_MOLECULE == "ACROLEIN":
+        label           = "   time\t\tC=0"
+    elif label_MOLECULE == "BH3NH3":
+        label           = "   time\t\t\tB-N\t\t\tN-H\t\tN-H\t\t\tN-H\t\tB-H\t\t\tB-H\t\tB-H\t\tNH3 pyramid\t\tBH3 pyramid"
+    elif label_MOLECULE == "Pyridine":
+        label           = "   time\t\t\tB-N\t\t\tB-H\t\t\tB-H\t\tB-H\t\tBH3 pyramid"
+    elif label_MOLECULE == "Nucleic_Acid":
+        label           = "   time\t\tC-O\t\t\tC-C"
     os.system("sed -i '1d' %s" 		%(TMP_COORDINATES_FILE_NAME))
     os.system('sed -i "s/time.*/%s/g" ' %(TMP_COORDINATES_FILE_NAME))
     return
@@ -191,112 +192,112 @@ def WRITE_HEAD_GP(outname, rangexmin, rangexmax, rangeymin, rangeymax, positionl
     return GNUPLOT_HEAD
 
 #----------------------------------------------------------------------------------------------------------------------------#					
-def WRITE_GEOMETRICAL_CORDINATES_HPP_GP(INPUT_COORD, GNUPLOT_TIME_LABEL):
+def WRITE_GEOMETRICAL_CORDINATES_HPP_GP(INPUT_COORD, GNUPLOT_TIME_label):
 #This subrouting will create a GNUPLOT_COORD for gnuplot. The GNUPLOT_COORD, depending on the INPUT, will plot different coordinates such as O-H, O-O...
 #Notice that you need to modify Geo_new.out file in case the geometrical paramenter changes.  
 	GNUPLOT_COORD 	= ''
 	index		= []
 	if ( "A" in INPUT_COORD ):
-		GNUPLOT_COORD += '  plot "COORDINATES.out" using %s:2 w l lw 5 dt 11 lc rgbcolor "#FF4500" title "O-O bond" axes x1y2'	% (GNUPLOT_TIME_LABEL) 	#Orange for O-O
+		GNUPLOT_COORD += '  plot "COORDINATES.out" using %s:2 w l lw 5 dt 11 lc rgbcolor "#FF4500" title "O-O bond" axes x1y2'	% (GNUPLOT_TIME_label) 	#Orange for O-O
 		y2label = '"Bond Length ({\\305})"'
 		index.append(2)
 	if ( "B" in INPUT_COORD ):
-		GNUPLOT_COORD += ', \\\n  "" using %s:4 w l lw 5 dt 11 lc rgbcolor "#660033" title "O--H bond" axes x1y2'		% (GNUPLOT_TIME_LABEL)	#Purple for O--H
+		GNUPLOT_COORD += ', \\\n  "" using %s:4 w l lw 5 dt 11 lc rgbcolor "#660033" title "O--H bond" axes x1y2'		% (GNUPLOT_TIME_label)	#Purple for O--H
 		index.append(4)
 	if ( "C" in INPUT_COORD ):
-		GNUPLOT_COORD += ', \\\n  "" using %s:5 w l lw 5 dt 11 lc rgbcolor "#800000" title "C-C bond" axes x1y2'			% (GNUPLOT_TIME_LABEL)	#Maroon 
+		GNUPLOT_COORD += ', \\\n  "" using %s:5 w l lw 5 dt 11 lc rgbcolor "#800000" title "C-C bond" axes x1y2'			% (GNUPLOT_TIME_label)	#Maroon 
 		index.append(5)
 	if ( "D" in INPUT_COORD ):
-		GNUPLOT_COORD += ', \\\n  "" using %s:6 w l lw 5 dt 11 lc rgbcolor "#FFD700" title "C=O bond" axes x1y2'			% (GNUPLOT_TIME_LABEL)	#Yellow
+		GNUPLOT_COORD += ', \\\n  "" using %s:6 w l lw 5 dt 11 lc rgbcolor "#FFD700" title "C=O bond" axes x1y2'			% (GNUPLOT_TIME_label)	#Yellow
 		index.append(6)
 	if ( "F" in INPUT_COORD ):
-		GNUPLOT_COORD += ', \\\n  "" using %s:3 w l lw 5 dt 11 lc rgbcolor "#FF0000" title "O-H bond" axes x1y2'			% (GNUPLOT_TIME_LABEL)	#Red
+		GNUPLOT_COORD += ', \\\n  "" using %s:3 w l lw 5 dt 11 lc rgbcolor "#FF0000" title "O-H bond" axes x1y2'			% (GNUPLOT_TIME_label)	#Red
 		index.append(3)
 	if ( "G" in INPUT_COORD ):
-		GNUPLOT_COORD += ', \\\n  "" using %s:8 w l lw 5 dt 11 lc rgbcolor "#21908d" title "C-O bond" axes x1y2'			% (GNUPLOT_TIME_LABEL)	#Teal
+		GNUPLOT_COORD += ', \\\n  "" using %s:8 w l lw 5 dt 11 lc rgbcolor "#21908d" title "C-O bond" axes x1y2'			% (GNUPLOT_TIME_label)	#Teal
 		index.append(8)
 	if ( "E" in INPUT_COORD ):
-		GNUPLOT_COORD += ', \\\n  "" using %s:($7/10) w l lw 5 dt 11 lc rgbcolor "#aadc32" title "Pyramidalization" axes x1y2'	% (GNUPLOT_TIME_LABEL)	#Lime Green
+		GNUPLOT_COORD += ', \\\n  "" using %s:($7/10) w l lw 5 dt 11 lc rgbcolor "#aadc32" title "Pyramidalization" axes x1y2'	% (GNUPLOT_TIME_label)	#Lime Green
 		index.append(7)
 		y2label = '"Bond Length ({\\305}) / Angle (10^-^1)"'
 #y2label is the label associated with the second plot of multiplot. Depending on which coordinate you chose it can change.
 	return GNUPLOT_COORD, y2label, index
 
 #----------------------------------------------------------------------------------------------------------------------------#                                  
-def WRITE_GEOMETRICAL_CORDINATES_BH3NH3_GP(INPUT_COORD, GNUPLOT_TIME_LABEL):
+def WRITE_GEOMETRICAL_CORDINATES_BH3NH3_GP(INPUT_COORD, GNUPLOT_TIME_label):
 	GNUPLOT_COORD   = '';	index           = []
 	if ( "A" in INPUT_COORD ):
-		GNUPLOT_COORD 	+= '  plot "COORDINATES.out" using %s:2 w l lw 5 dt 11 lc rgbcolor "#FF4500" title "N-B bond" axes x1y2'   % (GNUPLOT_TIME_LABEL)  # Orange
+		GNUPLOT_COORD 	+= '  plot "COORDINATES.out" using %s:2 w l lw 5 dt 11 lc rgbcolor "#FF4500" title "N-B bond" axes x1y2'   % (GNUPLOT_TIME_label)  # Orange
 		y2label 	=  '"Bond Length ({\\305})"'
 		index.append(2)
 	if ( "B" in INPUT_COORD ):
-		GNUPLOT_COORD += ', \\\n  "" using %s:3 w l lw 5 dt 11 lc rgbcolor "#660033" title "N-H bonds" axes x1y2'   	% (GNUPLOT_TIME_LABEL)  # Purple
-		GNUPLOT_COORD += ', \\\n  "" using %s:4 w l lw 5 dt 11 lc rgbcolor "#660033" notitle axes x1y2'   		% (GNUPLOT_TIME_LABEL)  
-		GNUPLOT_COORD += ', \\\n  "" using %s:5 w l lw 5 dt 11 lc rgbcolor "#660033" notitle axes x1y2'   		% (GNUPLOT_TIME_LABEL)  	
+		GNUPLOT_COORD += ', \\\n  "" using %s:3 w l lw 5 dt 11 lc rgbcolor "#660033" title "N-H bonds" axes x1y2'   	% (GNUPLOT_TIME_label)  # Purple
+		GNUPLOT_COORD += ', \\\n  "" using %s:4 w l lw 5 dt 11 lc rgbcolor "#660033" notitle axes x1y2'   		% (GNUPLOT_TIME_label)  
+		GNUPLOT_COORD += ', \\\n  "" using %s:5 w l lw 5 dt 11 lc rgbcolor "#660033" notitle axes x1y2'   		% (GNUPLOT_TIME_label)  	
 		index.append(3); index.append(4); index.append(5)
 	if ( "C" in INPUT_COORD ):
-		GNUPLOT_COORD += ', \\\n  "" using %s:6 w l lw 5 dt 11 lc rgbcolor "#FFD700" title "B-H bonds" axes x1y2'        % (GNUPLOT_TIME_LABEL)  
-		GNUPLOT_COORD += ', \\\n  "" using %s:7 w l lw 5 dt 11 lc rgbcolor "#FFD700" notitle axes x1y2'                  % (GNUPLOT_TIME_LABEL)
-		GNUPLOT_COORD += ', \\\n  "" using %s:8 w l lw 5 dt 11 lc rgbcolor "#FFD700" notitle axes x1y2'                  % (GNUPLOT_TIME_LABEL)
+		GNUPLOT_COORD += ', \\\n  "" using %s:6 w l lw 5 dt 11 lc rgbcolor "#FFD700" title "B-H bonds" axes x1y2'        % (GNUPLOT_TIME_label)  
+		GNUPLOT_COORD += ', \\\n  "" using %s:7 w l lw 5 dt 11 lc rgbcolor "#FFD700" notitle axes x1y2'                  % (GNUPLOT_TIME_label)
+		GNUPLOT_COORD += ', \\\n  "" using %s:8 w l lw 5 dt 11 lc rgbcolor "#FFD700" notitle axes x1y2'                  % (GNUPLOT_TIME_label)
 		index.append(6); index.append(7); index.append(8)
 
 	return GNUPLOT_COORD, y2label, index
 
 #----------------------------------------------------------------------------------------------------------------------------#                                  
-def WRITE_GEOMETRICAL_CORDINATES_Pyridine_GP(INPUT_COORD, GNUPLOT_TIME_LABEL):
+def WRITE_GEOMETRICAL_CORDINATES_Pyridine_GP(INPUT_COORD, GNUPLOT_TIME_label):
         GNUPLOT_COORD   = '';   index           = []
         if ( "A" in INPUT_COORD ):
-                GNUPLOT_COORD   += '  plot "COORDINATES.out" using %s:2 w l lw 5 dt 11 lc rgbcolor "#FF4500" title "N-B bond" axes x1y2'   % (GNUPLOT_TIME_LABEL)  # Orange
+                GNUPLOT_COORD   += '  plot "COORDINATES.out" using %s:2 w l lw 5 dt 11 lc rgbcolor "#FF4500" title "N-B bond" axes x1y2'   % (GNUPLOT_TIME_label)  # Orange
                 y2label         =  '"Bond Length ({\\305})"'
                 index.append(2)
         if ( "B" in INPUT_COORD ):
-                GNUPLOT_COORD += ', \\\n  "" using %s:3 w l lw 5 dt 11 lc rgbcolor "#FFD700" title "B-H bonds" axes x1y2'        % (GNUPLOT_TIME_LABEL)
-                GNUPLOT_COORD += ', \\\n  "" using %s:4 w l lw 5 dt 11 lc rgbcolor "#FFD700" notitle axes x1y2'                  % (GNUPLOT_TIME_LABEL)
-                GNUPLOT_COORD += ', \\\n  "" using %s:5 w l lw 5 dt 11 lc rgbcolor "#FFD700" notitle axes x1y2'                  % (GNUPLOT_TIME_LABEL)
+                GNUPLOT_COORD += ', \\\n  "" using %s:3 w l lw 5 dt 11 lc rgbcolor "#FFD700" title "B-H bonds" axes x1y2'        % (GNUPLOT_TIME_label)
+                GNUPLOT_COORD += ', \\\n  "" using %s:4 w l lw 5 dt 11 lc rgbcolor "#FFD700" notitle axes x1y2'                  % (GNUPLOT_TIME_label)
+                GNUPLOT_COORD += ', \\\n  "" using %s:5 w l lw 5 dt 11 lc rgbcolor "#FFD700" notitle axes x1y2'                  % (GNUPLOT_TIME_label)
                 index.append(3); index.append(4); index.append(5)
 
         return GNUPLOT_COORD, y2label, index
 
 
-def WRITE_GEOMETRICAL_CORDINATES_Nucleic_Acid_GP(INPUT_COORD, GNUPLOT_TIME_LABEL):
+def WRITE_GEOMETRICAL_CORDINATES_Nucleic_Acid_GP(INPUT_COORD, GNUPLOT_TIME_label):
         GNUPLOT_COORD   = '';   index           = []
         if ( "A" in INPUT_COORD ):
-                GNUPLOT_COORD   += '  plot "COORDINATES.out" using %s:2 w l lw 5 dt 11 lc rgbcolor "#FF4500" title "C-O bond" axes x1y2'   % (GNUPLOT_TIME_LABEL)  # Orange
+                GNUPLOT_COORD   += '  plot "COORDINATES.out" using %s:2 w l lw 5 dt 11 lc rgbcolor "#FF4500" title "C-O bond" axes x1y2'   % (GNUPLOT_TIME_label)  # Orange
                 y2label         =  '"Bond Length ({\\305})"'
                 index.append(2)
         if ( "B" in INPUT_COORD ):
-                GNUPLOT_COORD += ', \\\n  "" using %s:3 w l lw 5 dt 11 lc rgbcolor "#FFD700" title "C-C bonds" axes x1y2'        % (GNUPLOT_TIME_LABEL)
+                GNUPLOT_COORD += ', \\\n  "" using %s:3 w l lw 5 dt 11 lc rgbcolor "#FFD700" title "C-C bonds" axes x1y2'        % (GNUPLOT_TIME_label)
                 index.append(3); 
 
         return GNUPLOT_COORD, y2label, index
 
 
 #----------------------------------------------------------------------------------------------------------------------------#
-def WRITE_NX_STATE_GP(nstates, STATE_LIST, INIT_S0_ENERGY, GNUPLOT_TIME_LABEL, colorS, colorT, DATAFILE, TIME_RESTART, RESTART):
+def WRITE_NX_STATE_GP(nstates, STATE_LIST, INIT_S0_ENERGY, GNUPLOT_TIME_label, colorS, colorT, DATAFILE, TIME_RESTART, RESTART):
 	GNUPLOT_STATE   = ''
 	SINGLET_STATES  = 0;	TRIPLET_STATES	= 1;
 	LW_1		= 3.0;	LW_2		= 6.0;
 
-	GNUPLOT_STATE 	+= '  plot "%s" u %s:(($%i - %9.5f)*27.2114) title "Total Energy" lw %3.1f lc rgbcolor "#000000" w l, \\\n' % (DATAFILE, GNUPLOT_TIME_LABEL, nstates + 3, INIT_S0_ENERGY, LW_1)
+	GNUPLOT_STATE 	+= '  plot "%s" u %s:(($%i - %9.5f)*27.2114) title "Total Energy" lw %3.1f lc rgbcolor "#000000" w l, \\\n' % (DATAFILE, GNUPLOT_TIME_label, nstates + 3, INIT_S0_ENERGY, LW_1)
 	for i in range(STATE_LIST[0]):
 		if SINGLET_STATES < 4:		#The first 4 singlets are displyed in blue
-			GNUPLOT_STATE += '  "" u %s:(($%i - %9.5f)*27.2114) title "S_%i" lw %3.1f lt 1 lc rgb "%s" w l, \\\n'	% (GNUPLOT_TIME_LABEL, i + 2, INIT_S0_ENERGY, i, LW_2, colorS[SINGLET_STATES])
+			GNUPLOT_STATE += '  "" u %s:(($%i - %9.5f)*27.2114) title "S_%i" lw %3.1f lt 1 lc rgb "%s" w l, \\\n'	% (GNUPLOT_TIME_label, i + 2, INIT_S0_ENERGY, i, LW_2, colorS[SINGLET_STATES])
 		else:				#The remaining are simply in grey without label
-			GNUPLOT_STATE += '  "" u %s:(($%i - %9.5f)*27.2114) notitle lw %3.1f lt 1 lc rgb "grey" w l, \\\n'   	% (GNUPLOT_TIME_LABEL, i + 2, INIT_S0_ENERGY,    LW_2)
+			GNUPLOT_STATE += '  "" u %s:(($%i - %9.5f)*27.2114) notitle lw %3.1f lt 1 lc rgb "grey" w l, \\\n'   	% (GNUPLOT_TIME_label, i + 2, INIT_S0_ENERGY,    LW_2)
 		SINGLET_STATES   += 1
 	for i in range(TRIPLET_STATES, STATE_LIST[2] + 1):
 		if TRIPLET_STATES < 4: 
-			GNUPLOT_STATE += '  "" u %s:(($%i - %9.5f)*27.2114) title "T_%i" lw %3.1f lt 1 lc rgb "%s" w l, \\\n'   % (GNUPLOT_TIME_LABEL, i + 2, INIT_S0_ENERGY, i, LW_2, colorT[TRIPLET_STATES])
+			GNUPLOT_STATE += '  "" u %s:(($%i - %9.5f)*27.2114) title "T_%i" lw %3.1f lt 1 lc rgb "%s" w l, \\\n'   % (GNUPLOT_TIME_label, i + 2, INIT_S0_ENERGY, i, LW_2, colorT[TRIPLET_STATES])
 		else:
-			GNUPLOT_STATE += '  "" u %s:(($%i - %9.5f)*27.2114) notitle lw %3.1f lt 1 lc rgb "grey" w l, \\\n'      % (GNUPLOT_TIME_LABEL, i + 2, INIT_S0_ENERGY,    LW_2)
+			GNUPLOT_STATE += '  "" u %s:(($%i - %9.5f)*27.2114) notitle lw %3.1f lt 1 lc rgb "grey" w l, \\\n'      % (GNUPLOT_TIME_label, i + 2, INIT_S0_ENERGY,    LW_2)
 		TRIPLET_STATES	+=1
 
 	# Plot the running trajecotry in back empty circles
-	GNUPLOT_STATE += '  "" u %s:(($%i - %9.5f)*27.2114) notitle lw %3.1f lc rgbcolor "#000000" pt 6 ps 2.0 w p\n\n'	% (GNUPLOT_TIME_LABEL, nstates + 2, INIT_S0_ENERGY, LW_1)
+	GNUPLOT_STATE += '  "" u %s:(($%i - %9.5f)*27.2114) notitle lw %3.1f lc rgbcolor "#000000" pt 6 ps 2.0 w p\n\n'	% (GNUPLOT_TIME_label, nstates + 2, INIT_S0_ENERGY, LW_1)
 	return GNUPLOT_STATE
 
 #----------------------------------------------------------------------------------------------------------------------------#
-def WRITE_SH_STATE_GP(nmstates, STATE_LIST, GNUPLOT_TIME_LABEL, colorS, colorT, DATAFILE, TIME_RESTART, RESTART):
+def WRITE_SH_STATE_GP(nmstates, STATE_LIST, GNUPLOT_TIME_label, colorS, colorT, DATAFILE, TIME_RESTART, RESTART):
 	LW_1            = 3.0;	LW_2            = 6.0
 	SINGLET_STATES  = 0  ;	TRIPLET_STATES	= 0
 	GNUPLOT_STATE	= ''
@@ -307,24 +308,24 @@ def WRITE_SH_STATE_GP(nmstates, STATE_LIST, GNUPLOT_TIME_LABEL, colorS, colorT, 
 				break
 	lisline = lisline.split()                                       # The lisline will contain the result at t = 0
 
-	GNUPLOT_STATE   += '  plot "%s" u %s:%i title "Total Energy" lw %6.2f lc rgbcolor "#000000" w l, \\\n'  	% (DATAFILE, GNUPLOT_TIME_LABEL, 4, LW_1)
+	GNUPLOT_STATE   += '  plot "%s" u %s:%i title "Total Energy" lw %6.2f lc rgbcolor "#000000" w l, \\\n'  	% (DATAFILE, GNUPLOT_TIME_label, 4, LW_1)
 	for i in range(nmstates):
 		if int(float(lisline[4 + nmstates + i])) == 0 :		# The spin of the i-th state is zero (singlet)
 			if SINGLET_STATES < 4:				# The first 4 singlets are displyed in blue 
-				GNUPLOT_STATE += '  "" u %s:%i title "S_%i" lw %6.2f lt 1 lc rgb "%s" w l	, \\\n' % (GNUPLOT_TIME_LABEL, 5 + i, SINGLET_STATES, LW_2, colorS[SINGLET_STATES])
+				GNUPLOT_STATE += '  "" u %s:%i title "S_%i" lw %6.2f lt 1 lc rgb "%s" w l	, \\\n' % (GNUPLOT_TIME_label, 5 + i, SINGLET_STATES, LW_2, colorS[SINGLET_STATES])
 			else:						# The remaining are simply in grey without label
-				GNUPLOT_STATE += '  "" u %s:%i notitle lw %6.2f lt 1 lc rgb "grey" w l		, \\\n' % (GNUPLOT_TIME_LABEL, 5 + i, 		      LW_2)
+				GNUPLOT_STATE += '  "" u %s:%i notitle lw %6.2f lt 1 lc rgb "grey" w l		, \\\n' % (GNUPLOT_TIME_label, 5 + i, 		      LW_2)
 			SINGLET_STATES	      += 1
 
 		if int(float(lisline[4 + nmstates + i])) == 2 :		# The spin of the i-th state is two (triplets)
 			if (TRIPLET_STATES < STATE_LIST[2]):		# STATE_LIST[2] = Number of triplet states
-				GNUPLOT_STATE += '  "" u %s:%i title "T_%i" lw %6.2f lt 1 lc rgb "%s" w l	, \\\n' % (GNUPLOT_TIME_LABEL, 5 + i, triplet + 1, LW_2, colorT[TRIPLET_STATES])
+				GNUPLOT_STATE += '  "" u %s:%i title "T_%i" lw %6.2f lt 1 lc rgb "%s" w l	, \\\n' % (GNUPLOT_TIME_label, 5 + i, triplet + 1, LW_2, colorT[TRIPLET_STATES])
 			else: 						# Plot the title only for one of the three components of the triplet states
-				GNUPLOT_STATE += '  "" u %s:%i notitle lw %6.2f lt 1 lc rgb "%s" w l		, \\\n'	% (GNUPLOT_TIME_LABEL, 5 + i, 		   LW_2, colorT[TRIPLET_STATES % STATE_LIST[2] ])
+				GNUPLOT_STATE += '  "" u %s:%i notitle lw %6.2f lt 1 lc rgb "%s" w l		, \\\n'	% (GNUPLOT_TIME_label, 5 + i, 		   LW_2, colorT[TRIPLET_STATES % STATE_LIST[2] ])
 			TRIPLET_STATES	      += 1
 # After three triplet (0,1,2) we want reinitilize the counters. Triplet are printed T1x, T2x, ..., T1y, T2y, ..., T1z, ...
 # After printing the label for the first three we can stop printing title (stoptitle is initialized at 1 at this point and no other title are printed) 
-	GNUPLOT_STATE   += '  "" u %s:%i notitle lw %6.2f lc rgbcolor "#000000" pt 6 ps 2.0 w p '			% (GNUPLOT_TIME_LABEL, 3, LW_1)
+	GNUPLOT_STATE   += '  "" u %s:%i notitle lw %6.2f lc rgbcolor "#000000" pt 6 ps 2.0 w p '			% (GNUPLOT_TIME_label, 3, LW_1)
 
 	# In case you have restarted the dynamics will be added the plot belonging to the last part of the previous dynamics.
 	if RESTART == True:                                             # This means that the dynamics with SHarc has been restarted from NX.
@@ -353,18 +354,18 @@ def WRITE_SH_STATE_GP_RESTARTED_FROM_NX(STATE_LIST, colorS, TIME_RESTART, lislin
 	return GNUPLOT_STATE
 
 #----------------------------------------------------------------------------------------------------------------------------#
-def WRITE_COORDS_AND_BREAKLINE(rangeymax, rangey2max, positionlabel2, TIMEBREAK, BREAKREASON, INPUT_COORD, GNUPLOT_TIME_LABEL, LABEL_MOLECULE):
+def WRITE_COORDS_AND_BREAKLINE(rangeymax, rangey2max, positionlabel2, TIMEBREAK, BREAKREASON, INPUT_COORD, GNUPLOT_TIME_label, label_MOLECULE):
 #Plot the second part with multipot
-	if 	LABEL_MOLECULE == "HPP":
-		GNUPLOT_COORD, y2label, index = WRITE_GEOMETRICAL_CORDINATES_HPP_GP(   INPUT_COORD, GNUPLOT_TIME_LABEL)
-	elif 	LABEL_MOLECULE == "BH3NH3":
-		GNUPLOT_COORD, y2label, index = WRITE_GEOMETRICAL_CORDINATES_BH3NH3_GP(INPUT_COORD, GNUPLOT_TIME_LABEL)
-	elif	LABEL_MOLECULE == "Pyridine":
-		GNUPLOT_COORD, y2label, index = WRITE_GEOMETRICAL_CORDINATES_Pyridine_GP(INPUT_COORD, GNUPLOT_TIME_LABEL) 
-	elif 	LABEL_MOLECULE == "Nucleic_Acid":
-		GNUPLOT_COORD, y2label, index = WRITE_GEOMETRICAL_CORDINATES_Nucleic_Acid_GP(INPUT_COORD, GNUPLOT_TIME_LABEL)
+	if 	label_MOLECULE == "HPP":
+		GNUPLOT_COORD, y2label, index = WRITE_GEOMETRICAL_CORDINATES_HPP_GP(   INPUT_COORD, GNUPLOT_TIME_label)
+	elif 	label_MOLECULE == "BH3NH3":
+		GNUPLOT_COORD, y2label, index = WRITE_GEOMETRICAL_CORDINATES_BH3NH3_GP(INPUT_COORD, GNUPLOT_TIME_label)
+	elif	label_MOLECULE == "Pyridine":
+		GNUPLOT_COORD, y2label, index = WRITE_GEOMETRICAL_CORDINATES_Pyridine_GP(INPUT_COORD, GNUPLOT_TIME_label) 
+	elif 	label_MOLECULE == "Nucleic_Acid":
+		GNUPLOT_COORD, y2label, index = WRITE_GEOMETRICAL_CORDINATES_Nucleic_Acid_GP(INPUT_COORD, GNUPLOT_TIME_label)
 	else:
-		print ("\n * Not implemented for molecule * \n", LABEL_MOLECULE)
+		print ("\n * Not implemented for molecule * \n", label_MOLECULE)
 
 	GNUPLOT_FINAL  = ''
 	GNUPLOT_FINAL += '  unset key\n  unset ylabel\n  unset yrange\n  unset ytics\n'
