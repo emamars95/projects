@@ -14,14 +14,6 @@ PWD   = os.getcwd()
 hline = "*****************************************************************\n" 
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
-def COPY_FILE(traj_name, result_folder, file_to_copy, time_traj, path_to_inputfile):
-    os.system(f"cp {path_to_inputfile}/{file_to_copy} {result_folder}")                      # Copy INPUT file for PLOT_TRAJ.py
-    os.system(f"sed -i 's/traj1/{traj_name}/' {result_folder}/{file_to_copy}")               # We update the INPUT files with
-    if "zoom" in file_to_copy:                                    # If it is the zoom INPUT we also modify the maxxrange and
-        os.system(f"sed -i '3s/0/{str(time_traj- 100)}/' {result_folder}/{file_to_copy}")    # We update the INPUT files with minxrange.
-        os.system(f"sed -i '4s/0/{str(time_traj)}/'      {result_folder}/{file_to_copy}")    # We update the INPUT files with maxxrange.
-
-#-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def CHECK_RESTARTED_DYNAMICS_HPP(restart_folder, summary):
     method, time_restart = os.path.basename(os.path.normpath(restart_folder)).split("_")
     d1_file  = "/d1_" + str(time_restart) + "fs.tmp"
@@ -131,6 +123,14 @@ def CHECK_REACTIVITY(result_folder, time_traj, summary, data):
         return summary, data
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
+def COPY_FILE(traj_name, result_folder, file_to_copy, time_traj, path_to_inputfile):
+    os.system(f"cp {path_to_inputfile}/{file_to_copy} {result_folder}")                      # Copy INPUT file for PLOT_TRAJ.py
+    os.system(f"sed -i 's/traj1/{traj_name}/' {result_folder}/{file_to_copy}")               # We update the INPUT files with
+    if "zoom" in file_to_copy:                                    # If it is the zoom INPUT we also modify the maxxrange and
+        os.system(f"sed -i '3s/0/{str(time_traj- 100)}/' {result_folder}/{file_to_copy}")    # We update the INPUT files with minxrange.
+        os.system(f"sed -i '4s/0/{str(time_traj)}/'      {result_folder}/{file_to_copy}")    # We update the INPUT files with maxxrange.
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def PLOT_TRAJ_FINISHED(traj_name, result_folder, time_traj, path_to_inputfile):
     print(f'{traj_name}\t is just finished. It will be fully analyzed automatically.\n')
     os.chdir(result_folder)
@@ -205,7 +205,6 @@ def ROUTINE_DYNAMICS(allname, summary_file, traj_file, folder, path_to_inputfile
             summary, data = CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder[0], path_to_inputfile)    
             summary_file.write(summary + '\n')    
             traj_file.write(data + '\n')   
-            sys.exit("test")        
     traj_file.close()      
     summary_file.close()
 
