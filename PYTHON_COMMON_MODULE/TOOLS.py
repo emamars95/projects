@@ -13,7 +13,7 @@ def sorted_nicely(ARRAY):
 # Get the data from the last line of file = FILE and column = RECORD  
 def GET_DATA(FILE, RECORD):
 	try:
-        	DATA    = float(subprocess.check_output(['tail', '-1', FILE]).split()[RECORD])
+		DATA    = float(subprocess.check_output(['tail', '-1', FILE]).split()[RECORD])
 	except:
 		DATA    = "None"
 	return DATA

@@ -14,8 +14,8 @@ PWD   = os.getcwd()
 hline = "*****************************************************************\n" 
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
-def COPY_FILE(traj_name, result_folder, file_to_copy, time_traj, where_file_to_copy):
-    os.system(f"cp {where_file_to_copy}/{file_to_copy} {result_folder}")                     # Copy INPUT file for PLOT_TRAJ.py
+def COPY_FILE(traj_name, result_folder, file_to_copy, time_traj, path_to_inputfile):
+    os.system(f"cp {path_to_inputfile}/{file_to_copy} {result_folder}")                      # Copy INPUT file for PLOT_TRAJ.py
     os.system(f"sed -i 's/traj1/{traj_name}/' {result_folder}/{file_to_copy}")               # We update the INPUT files with
     if "zoom" in file_to_copy:                                    # If it is the zoom INPUT we also modify the maxxrange and
         os.system(f"sed -i '3s/0/{str(time_traj- 100)}/' {result_folder}/{file_to_copy}")    # We update the INPUT files with minxrange.
@@ -125,37 +125,29 @@ def CHECK_REACTIVITY(traj_name, result_folder, time_traj, summary, data, data_re
                 summary += f"\tD1 {d1:5.4f} at TIME {time_d1:5.1f} fs"
                 coordinate_file = result_folder + '/' + PARAM_FILE.coordinate_file_to_use
                 summary, data = CHECK_REACTIVITY_BH3NH3(coordinate_file, summary, data)
-
-#                restart_folder = glob.glob(result_folder + "../*UMP2*")                     # Name in which the trajectory was restarted for HPP
-#                if restart_folder:
-#                    result_folder = restart_folder[0] + '/RESULTS/'
-#                    coordinate_file = result_folder + PARAM_FILE.coordinate_file
-#                    PLOT_TRAJ_FINISHED(traj_name, result_folder, time_traj, PARAM_FILE.BH3NH3.restart_template)
-#                    *binx, data_restart = CHECK_REACTIVITY_BH3NH3(coordinate_file, summary, data_restart)
         else: 
             raise ValueError (f'Value not recognized in {template_geo}')
         return summary, data, data_restart
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
-def PLOT_TRAJ_FINISHED(traj_name, result_folder, time_traj, where_file_to_copy):
+def PLOT_TRAJ_FINISHED(traj_name, result_folder, time_traj, path_to_inputfile):
     print(f'{traj_name}\t is just finished. It will be fully analyzed automatically.\n')
     os.chdir(result_folder)
-    COPY_FILE(traj_name, result_folder, PARAM_FILE.input_for_traj, time_traj, where_file_to_copy)       # We modify the two file changing name of the trajectories and the time
+    COPY_FILE(traj_name, result_folder, PARAM_FILE.input_for_traj, time_traj, path_to_inputfile)       # We modify the two file changing name of the trajectories and the time
     os.system(f"{PARAM_FILE.plot_traj_script} {PARAM_FILE.input_for_traj}")                             # RUN our script to generate trajectory plots.
     if time_traj > 100:
-        COPY_FILE(traj_name, result_folder, PARAM_FILE.input_for_zoom, time_traj, where_file_to_copy)
+        COPY_FILE(traj_name, result_folder, PARAM_FILE.input_for_zoom, time_traj, path_to_inputfile)
         os.system(f"{PARAM_FILE.plot_traj_script} {PARAM_FILE.input_for_zoom} &>/dev/null")             # RUN our script to generate the trajectory of the last part of the dynamics.
     os.system(f'touch {result_folder}/{PARAM_FILE.dont_analyze_file}')                                  # We write the file to not analyze the folder again
     os.chdir(PWD)
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
-def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder):
+def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder, path_to_inputfile):
     # The two string are initialized with the name of the trajectory.
     print(f"{PARAM_FILE.bcolors.OKBLUE}*****  The dynamics of {traj_name:<10} is checked         *****\n{PARAM_FILE.bcolors.ENDC}") 
     summary = str(traj_name) + "\t"                                             # We add the name of the trajectory at the first column
     data = str(traj_name) + "\t"
     data += GET_EXCITATION_ENERGY(PWD + "/makedir.log", traj_name) + "\t"       # We collect the excitation energy from the makedir.log file
-    data_restart = data
 
     time_traj = GET_DATA(result_folder + "/en.dat", 0)                          # Collect TRAJ time (record 0) from the en.dat file
 
@@ -163,13 +155,13 @@ def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder):
 # and the excited state dynamics is fully stopped. In such cases, we do not want to plot them again. However, maybe we want restart the ground  #
 # state dynamics.  
 
-    if isfile(result_folder + '/' + PARAM_FILE.dont_analyze_file):      # If the file is present in the folder
+    if isfile(result_folder + '/' + PARAM_FILE.dont_analyze_file):              # If the file is present in the folder
         summary += f"FINISHED AT {float(time_traj):6.1f} fs"                    # The plots will be not generated again
-        if isfile(result_folder + '/' + PARAM_FILE.error_dyn):          # If the error file (due energy discontinuity) is present in the folder
+        if isfile(result_folder + '/' + PARAM_FILE.error_dyn):                  # If the error file (due energy discontinuity) is present in the folder
             summary += "\t ENERGY DISCONTINUITY"
             data += "ENERGY_DISCONTINUITY"
         else: 
-            summary, data, data_restart = CHECK_REACTIVITY(traj_name, result_folder, time_traj, summary, data, data_restart)
+            summary, data = CHECK_REACTIVITY(traj_name, result_folder, time_traj, summary, data)
 
 # This section is dedicated in case the file DONT_ANALYZE is NOT found in the result folder. In this cases the dynamics is not stopped yet    #
 # or at least it is just finished. In this last case, the file DONT_ANALYZE will be created, warning that is not necessary to analyze         #
@@ -189,25 +181,24 @@ def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder):
             data     += "ERROR"
         # JUST FINISHED TRAJECTORY! IT HAS TO BE PLOTTED AND ANALYZED
         elif STOP_SIGNAL:                                    # If the dynamics is just finished!
-            PLOT_TRAJ_FINISHED(traj_name, result_folder, time_traj, PWD)
+            PLOT_TRAJ_FINISHED(traj_name, result_folder, time_traj, path_to_inputfile)
             summary += f"* JUST FINISHED *\t{float(time_traj):8.2f} fs"      
             os.system('grep "d1 diagnostic for MP2:" ' + traj_folder + '/moldyn.log | awk \'{printf "%9.2f\\t%s\\n", counter/2, $5; counter++}\' > d1_values')
         # STILL RUNNING.
         else:                                        # Otherwise the dynamics is still running
             summary  += "   RUNNING   \t%8.2f fs"                %(float(time_traj))
             data     += "RUNNING"    
-    return summary, data, data_restart
+    return summary, data
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
-def ROUTINE_DYNAMICS(allname, summary_file, traj_file, folder):
+def ROUTINE_DYNAMICS(allname, summary_file, traj_file, folder, path_to_inputfile):
     # For the folder present in PWD we enter sequentially in each of them
     for traj_name in allname:
         traj_folder = f'{PWD}/{traj_name}/' 
         result_folder = glob.glob(traj_folder + folder)
         if result_folder:
-            print(traj_name)
             os.chdir(traj_folder)                 
-            summary, data, data_restart = CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder[0])    
+            summary, data = CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder[0], path_to_inputfile)    
             summary_file.write(summary + '\n')    
             traj_file.write(data + '\n')           
     traj_file.close()      
@@ -223,14 +214,16 @@ def CHECK_DYNAMICS():
     summary_file = open(PARAM_FILE.summary_file  , 'w')
     traj_file = open(PARAM_FILE.traj_file, 'w')
     folder = 'RESULTS/'
-    #ROUTINE_DYNAMICS(allname, summary_file, traj_file, folder)
+    #ROUTINE_DYNAMICS(allname, summary_file, traj_file, folder, path_to_inputfile = PWD)
+
     print (hline)
     print ("*****       The restarted dynamics will be checked         *****\n")
     print (hline) 
     summary_file = open(PARAM_FILE.summary_file_restart, 'w')
     traj_file = open(PARAM_FILE.traj_file_restart, 'w')
     folder = 'UMP2*/RESULTS/'
-    ROUTINE_DYNAMICS(allname, summary_file, traj_file, folder)
+    path_to_inputfile = '/ddn/home/fzzq22/CODE_AND_SCRIPT/TEMPLATE_RESTARTs/NX_UMP2'
+    ROUTINE_DYNAMICS(allname, summary_file, traj_file, folder, path_to_inputfile)
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 # Subroutine to submit some dynamics

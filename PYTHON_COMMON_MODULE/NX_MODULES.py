@@ -6,7 +6,6 @@ import random
 import glob
 from os.path import isfile
 
-sys.path.append('/ddn/home/fzzq22/CODE_AND_SCRIPT/PYTHON_COMMON_MODULE')
 from TOOLS      import sorted_nicely
 import PARAM_FILE
 
@@ -36,16 +35,6 @@ def GET_TIME_BASED_ON_D1(result_folder, min_time, max_time):
 def MAKE_GEOM_VELOC_NX(time, time_step, natoms):
 # In dyn.out the data relative to time step i are written AFTER the pattern $time(i)
 # Therefore we sed between $time(i) and $time(i+1) to get the vale of $time(i)
-    # Create the file form dyn.out for the time step before the crossing with d1 diagnostic lower than 0.065
-    #pattern_1 = " " + str(time) + "0 fs"
-    #pattern_2 = " " + str(time + time_step) + "0 fs"
-    #os.system("sed -n '/" + pattern_1 + "/,/" + pattern_2 + "/p' dyn.out > out.tmp")
-    # Generate the geom file from the step we are interested in. Remove blank lines. Create xyz file using NX tool
-    #os.system("sed -n '/New geometry:/,/New velocity:/{//!p;}' out.tmp | awk 'NF' > geom ")
-    #os.system(". load-NX.sh && $NX/nx2xyz > geom.xyz")
-    # Generate the veloc file from the step we are interested in 
-    #os.system("sed -n '/New velocity:/,/Time    Etot         Ekin/{//!p;}' out.tmp | awk 'NF' > veloc ")
-    #os.system("rm -f out.tmp")
 	file_geom = open('geom', 'w')
 	file_veloc = open('veloc', 'w')
 	with open('dyn.out', 'r') as fp:
@@ -91,8 +80,7 @@ def SUBMIT(TRAJ_NAME):
 # Submit the trajectory for NX dynamics
 def SUBMIT_TRAJECTORIES(PWD):
 	labeling	= False
-	if isfile(PWD + "/TO_SUBMIT"): labeling	= True
-		
+	if isfile(PWD + "/TO_SUBMIT"): labeling	= True	
 	FIRST_TRAJ      = int(input("Insert first traj to submit   "))		
 	LAST_TRAJ       = int(input("Insert last traj to submit    "))
 	print("INITIAL CONDITIONS from ", FIRST_TRAJ, " to ", LAST_TRAJ, " will be submitted")
@@ -100,8 +88,10 @@ def SUBMIT_TRAJECTORIES(PWD):
 		TRAJ_NAME = "/TRAJ" + str(i)
 		os.chdir(PWD + TRAJ_NAME + "/")				# Eneter in the folder
 		if labeling:						# If we have previusly labeled the traj to sumbit
-			if (isfile("TO_SUBMIT")): SUBMIT(TRAJ_NAME)	# If the traj is labelled
-		else:				  SUBMIT(TRAJ_NAME)     # All traj in the range
+			if (isfile("TO_SUBMIT")): 
+				SUBMIT(TRAJ_NAME)	# If the traj is labelled
+		else:				  
+			SUBMIT(TRAJ_NAME)     # All traj in the range
 	return
 
 # Get the excitation energy and the probability of one specific TRAJECTORY. Return a string with the values.  

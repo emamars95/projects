@@ -10,16 +10,11 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 ev_au_conv = 27.211324570273
-
 #thresh_d1 = 0.075
 thresh_d1 = 0.05
-
 # ------------------------------------------------------------------------------------- #
 # This section contain general folder definition 
-
 # ------------------------------------------------------------------------------------- #
-
-
 plot_traj_script = "PLOT_TRAJ.py"
 # -------------------------------------------------------------------------------------	#
 # This section contain common files definition within the script suite
@@ -48,6 +43,8 @@ qy_file_restart = "QY_restart.dat"
 # ------------------------------------------------------------------------------------- #
 
 viridis = ['#440154', '#472c7a' ,'#3b518b', '#2c718e', '#21908d', '#27ad81', '#5cc863','#aadc32', '#fde725']    # Viridis palette
+shadeofblue     = ["#084594","#2171B5","#9ECAE1","#C6DBEF"]
+shadeofgreen    = ["#005A32","#238B45","#A1D99B","#C7E9C0"]
 
 class BH3NH3:
     # Name of the molecule
