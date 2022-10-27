@@ -80,7 +80,7 @@ def CHECK_REACTIVITY_BH3NH3(coordinate_file, summary, data):
     if not "NHDISS" in data:    summary    += "\t\t\t"
     for index in range(2,5):
         B_H_BOND        = float(GET_DATA(coordinate_file, index + 3))
-        if B_H_BOND > 1.50:                            # B-H bond for diss
+        if B_H_BOND > 1.60:                            # B-H bond for diss
             summary  += "\t> B-H DISS < (%3.3f)" %(B_H_BOND)
             data     += "BHDISS"
     return summary, data
