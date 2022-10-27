@@ -2,34 +2,33 @@
 
 import re
 import subprocess
-import sys
 
 # Sort the data alphanumerically
-def sorted_nicely(ARRAY):
+def sorted_nicely(array):
         convert = lambda text: int(text) if text.isdigit() else text
         alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
-        return sorted(ARRAY, key = alphanum_key)
+        return sorted(array, key = alphanum_key)
 
 # Get the data from the last line of file = FILE and column = RECORD  
-def GET_DATA(FILE, RECORD):
+def GET_data(FILE, RECORD):
 	try:
-		DATA    = float(subprocess.check_output(['tail', '-1', FILE]).split()[RECORD])
+		data    = float(subprocess.check_output(['tail', '-1', FILE]).split()[RECORD])
 	except:
-		DATA    = "None"
-	return DATA
+		data    = "None"
+	return data
 
-def GET_DATA_FROM_STRING(FILE, STRING, RECORD):
+def GET_data_FROM_STRING(FILE, STRING, RECORD):
 	try:
-		DATA    = float(subprocess.check_output('grep "%s" %s | tail -1' % (STRING, FILE), shell = True).decode('ascii').split()[RECORD])
+		data    = float(subprocess.check_output('grep "%s" %s | tail -1' % (STRING, FILE), shell = True).decode('ascii').split()[RECORD])
 	except:
-		DATA	= "None"
-	return DATA
+		data	= "None"
+	return data
 
 # Discrete gradient at the 4th order 
-def GRADIENT(ARRAY, i):
-	grad    = ARRAY[i-2]/12 - 2*ARRAY[i-1]/3 + 2*ARRAY[i+1]/3 - ARRAY[i+2]/12
+def GRADIENT(array, i):
+	grad    = array[i-2]/12 - 2*array[i-1]/3 + 2*array[i+1]/3 - array[i+2]/12
 	return grad
 # Discrete Hessian at the 4th order
-def CURVATURE(ARRAY,i):	
-	hess	= -ARRAY[i-2]/12 + 4*ARRAY[i-1]/3 - 5*ARRAY[i]/2 + 4*ARRAY[i+1]/3 - ARRAY[i+2]/12
+def CURVATURE(array,i):	
+	hess	= -array[i-2]/12 + 4*array[i-1]/3 - 5*array[i]/2 + 4*array[i+1]/3 - array[i+2]/12
 	return hess
