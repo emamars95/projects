@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from os.path import isfile, isdir
-from shutil import rmtree, copy, move
+from shutil import rmtree, copy, copytree, move
 import sys
 import os
 import random
@@ -22,7 +22,11 @@ def COPY_FILES(folder_restart, ref_path, file_list):
 	os.mkdir(folder_restart)
 	# copy list of files in a folder
 	for file_name in file_list:
-		copy(ref_path + file_name, folder_restart)
+		file_to_copy = ref_path + file_name
+		if isfile(file_to_copy): 
+			copy(file_to_copy, folder_restart)
+		else:
+			copytree(file_to_copy, folder_restart)
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def MOVE_FILES(folder_restart, file_list):
