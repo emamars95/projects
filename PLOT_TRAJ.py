@@ -63,7 +63,7 @@ def main():
 	dictionary = TRAJECTORY_MODULES.READING_PARAMETER_FILE(parameter_file_name)
 
 	calculation             = dictionary.get('method')             		# SH or NX
-	state_list              = dictionary.get('states')
+	state_list              = dictionary.get('states').split()
 	rangexmin               = TEST_DICTIONARY_KEY(dictionary.get('rangexmin'))      	# Xmin and Xmax for
 	rangexmax               = TEST_DICTIONARY_KEY(dictionary.get('rangexmax'))
 	rangeymin               = TEST_DICTIONARY_KEY(dictionary.get('rangeymin'))      	# We use multiplot. 
