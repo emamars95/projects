@@ -130,7 +130,7 @@ def TRAJECTORY_BREAK_NX(EnergyFile, nmstates, TIMESTEP):
 	return TIME, BREAKREASON, INIT_S0_ENERGY/27.2114
 
 #----------------------------------------------------------------------------------------------------------------------------#
-def GET_MOLECULE_label(template_geo):
+def GET_MOLECULE_LABEL(template_geo):
 	if   "HPP" 	in template_geo:
 		label = "HPP" 
 	elif "HPAC" 	in template_geo:
