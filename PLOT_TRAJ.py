@@ -49,6 +49,10 @@ def CHECK_RESTART(rangexmin):
 		gnuplot_time_label = "1"									# Time aways written in the first column
 	return restart, time_restart, gnuplot_time_label, rangexmin
 
+def TEST_DICTIONARY_KEY(key):
+	if key:
+		key = float(key)
+	return key
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def main():
 	if sys.argv[1]:
@@ -60,15 +64,15 @@ def main():
 
 	calculation             = dictionary.get('method')             		# SH or NX
 	state_list              = dictionary.get('states')
-	rangexmin               = float(dictionary.get('rangexmin'))      	# Xmin and Xmax for 
-	rangexmax               = float(dictionary.get('rangexman'))
-	rangeymin               = float(dictionary.get('rangeymin'))      	# We use multiplot. 
-	rangeymax               = float(dictionary.get('rangeymax'))
-	rangey2min              = float(dictionary.get('rangey2min'))      	
-	rangey2max              = float(dictionary.get('rangey2max'))      	
+	rangexmin               = TEST_DICTIONARY_KEY(dictionary.get('rangexmin'))      	# Xmin and Xmax for
+	rangexmax               = TEST_DICTIONARY_KEY(dictionary.get('rangexmax'))
+	rangeymin               = TEST_DICTIONARY_KEY(dictionary.get('rangeymin'))      	# We use multiplot. 
+	rangeymax               = TEST_DICTIONARY_KEY(dictionary.get('rangeymax'))
+	rangey2min              = TEST_DICTIONARY_KEY(dictionary.get('rangey2min'))      	
+	rangey2max              = TEST_DICTIONARY_KEY(dictionary.get('rangey2max'))      	
 	outname                 = dictionary.get('output').rstrip()    		# Name of the plot.p
 	input_coord             = dictionary.get('coordinates')
-	timestep                = float(dictionary.get('time_step'))
+	timestep                = TEST_DICTIONARY_KEY(dictionary.get('time_step'))
 	template_geo            = dictionary.get('template_geo').rstrip()
 	# --------------------------- END OF READING THE PARAMETERS ------------------------------------ #
 	if calculation.upper() == "NX":		# NX
