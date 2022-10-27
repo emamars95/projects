@@ -64,11 +64,14 @@ def CHECK_REACTIVITY_NRMECI(result_folder, summary, data):
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def CHECK_REACTIVITY_BH3NH3(coordinate_file, summary, data):
+    check = False
     B_N_BOND             = GET_DATA(coordinate_file, 1)       # Collect B-N bond distance
     if float(B_N_BOND) > 2.0:                                               
-        summary  += "\t> B-N DISS < (%3.3f)" %(B_N_BOND)
-        data     += "BNDISS"
-    if not "BNDISS" in data: summary  += "\t\t\t"
+        summary += "\t> B-N DISS < (%3.3f)" %(B_N_BOND)
+        data += "BNDISS"
+        check = True
+    if not "BNDISS" in data: 
+        summary  += "\t\t\t"
     # We collect all 3 B-H and N-H bonds in two arrays
     LONGER_N_H_BOND        = 0;
     for index in range(2,5):
@@ -77,12 +80,18 @@ def CHECK_REACTIVITY_BH3NH3(coordinate_file, summary, data):
         if N_H_BOND > 1.45:                            # N-H bond for diss
             summary  += "\t> N-H DISS < (%3.3f)" %(N_H_BOND)  
             data     += "NHDISS"
-    if not "NHDISS" in data:    summary    += "\t\t\t"
+            check = True
+    if not "NHDISS" in data:    
+        summary    += "\t\t\t"
     for index in range(2,5):
         B_H_BOND        = float(GET_DATA(coordinate_file, index + 3))
         if B_H_BOND > 1.60:                            # B-H bond for diss
             summary  += "\t> B-H DISS < (%3.3f)" %(B_H_BOND)
             data     += "BHDISS"
+            check = True
+    if not check:
+        summary += f"\tUNDERTERMINED"
+        data += 'NOTDETER'
     return summary, data
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
