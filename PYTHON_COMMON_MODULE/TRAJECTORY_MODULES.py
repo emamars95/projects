@@ -261,13 +261,13 @@ def WRITE_NX_STATE_GP(nstates, state_list, s0_ene, t_label, datafile):
 	gnuplot_state = f' plot "{datafile}" u {t_label}:((${nstates+3} - {s0_ene:9.5f})*{PARAM_FILE.ev_au_conv}) title "Total Energy" lw {lw_1:3.1f} lc rgbcolor "#000000" w l, \\\n'
 	for i in range(state_list[0]):
 		if singlets < 4:						# The first 4 singlets are displyed in blue
-			gnuplot_state += f' "" u {t_label}:((${i+2} - {s0_ene:9.5f})*{PARAM_FILE.ev_au_conv}) title "S_{i}" lw {lw_2:3.1f} lt 1 lc rgb "{PARAM_FILE.shadeofblue[[singlets]]}" w l, \\\n'
+			gnuplot_state += f' "" u {t_label}:((${i+2} - {s0_ene:9.5f})*{PARAM_FILE.ev_au_conv}) title "S_{i}" lw {lw_2:3.1f} lt 1 lc rgb "{PARAM_FILE.shadeofblue[singlets]}" w l, \\\n'
 		else:									# The remaining are simply in grey without label
 			gnuplot_state += f' "" u {t_label}:((${i+2} - {s0_ene:9.5f})*{PARAM_FILE.ev_au_conv}) notitle lw {lw_2:3.1f} lt 1 lc rgb "grey" w l, \\\n'
 		singlets += 1
 	for i in range(triplets, state_list[2] + 1):
 		if triplets < 4: 
-			gnuplot_state += f' "" u {t_label}:((${i+2} - {s0_ene:9.5f})*{PARAM_FILE.ev_au_conv}) title "T_{i}" lw {lw_2:3.1f} lt 1 lc rgb "{PARAM_FILE.shadeofgreen[[triplets]]}" w l, \\\n'
+			gnuplot_state += f' "" u {t_label}:((${i+2} - {s0_ene:9.5f})*{PARAM_FILE.ev_au_conv}) title "T_{i}" lw {lw_2:3.1f} lt 1 lc rgb "{PARAM_FILE.shadeofgreen[triplets]}" w l, \\\n'
 		else:
 			gnuplot_state += f' "" u {t_label}:((${i+2} - {s0_ene:9.5f})*{PARAM_FILE.ev_au_conv}) notitle lw {lw_2:3.1f} lt 1 lc rgb "grey" w l, \\\n'
 		triplets	+=1
