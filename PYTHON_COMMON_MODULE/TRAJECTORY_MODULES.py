@@ -5,7 +5,7 @@ import subprocess
 import sys
 from json import loads
 
-sys.path.append('/ddn/home/fzzq22/CODE_AND_SCRIPT/PYTHON_COMMON_MODULE')
+from TOOLS import GET_DATA
 import PARAM_FILE
 
 #----------------------------------------------------------------------------------------------------------------------------#
@@ -100,7 +100,7 @@ def TRAJECTORY_BREAK_NX(EnergyFile, nmstates, timestep):
 				# nmstates+2 line with total energy, consider the array in python start from 0
 				tot_energy_step_1	= float(lisline[nmstates + 2]) * PARAM_FILE.ev_au_conv
 				INIT_TOT_ENERGY		= tot_energy_step_1            			# We save the total energy at the beginning
-				INIT_S0_ENERGY		= float(lisline[1]) * PARAM_FILE.ev_au_conv   	# NX save energy in a.u and not scaled respect the intial point
+				s0_ene		= float(lisline[1]) * PARAM_FILE.ev_au_conv   	# NX save energy in a.u and not scaled respect the intial point
 			if (i > 0):
 				# The total energy for the actual line is saved in the variable
 				tot_energy_step_2 	= float(lisline[nmstates + 2]) * PARAM_FILE.ev_au_conv
@@ -112,7 +112,7 @@ def TRAJECTORY_BREAK_NX(EnergyFile, nmstates, timestep):
 				(tot_energy_step_1, tot_energy_step_2, warning, TIME, BREAKREASON,
 					 tobreak) = CHECK_BREAK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY, warning, TIME, BREAKREASON)
 				if tobreak: break
-	return TIME, BREAKREASON, INIT_S0_ENERGY/PARAM_FILE.ev_au_conv
+	return TIME, BREAKREASON, s0_ene/PARAM_FILE.ev_au_conv
 
 #----------------------------------------------------------------------------------------------------------------------------#
 def GET_MOLECULE_LABEL(template_geo):
@@ -255,84 +255,77 @@ def WRITE_GEOMETRICAL_CORDINATES_Nucleic_Acid_GP(input_coord, gnuplot_time_label
 
 
 #----------------------------------------------------------------------------------------------------------------------------#
-def WRITE_NX_STATE_GP(nstates, state_list, INIT_S0_ENERGY, gnuplot_time_label, colorS, colorT, DATAFILE, TIME_RESTART, RESTART):
-	gnuplot_state   = ''
-	SINGLET_STATES  = 0;	TRIPLET_STATES	= 1;
-	LW_1		= 3.0;	LW_2		= 6.0;
-
-	gnuplot_state 	+= '  plot "%s" u %s:(($%i - %9.5f)*27.2114) title "Total Energy" lw %3.1f lc rgbcolor "#000000" w l, \\\n' % (DATAFILE, gnuplot_time_label, nstates + 3, INIT_S0_ENERGY, LW_1)
+def WRITE_NX_STATE_GP(nstates, state_list, s0_ene, t_label, datafile, time_restart, restart):
+	singlets = 0; triplets = 1;
+	lw_1 = 3.0;	lw_2 = 6.0;
+	gnuplot_state = f' plot "{datafile}" u {t_label}:((${nstates+3} - {s0_ene:9.5f})*{PARAM_FILE.ev_au_conv}) title "Total Energy" lw {lw_1:3.1f} lc rgbcolor "#000000" w l, \\\n'
 	for i in range(state_list[0]):
-		if SINGLET_STATES < 4:		#The first 4 singlets are displyed in blue
-			gnuplot_state += '  "" u %s:(($%i - %9.5f)*27.2114) title "S_%i" lw %3.1f lt 1 lc rgb "%s" w l, \\\n'	% (gnuplot_time_label, i + 2, INIT_S0_ENERGY, i, LW_2, colorS[SINGLET_STATES])
-		else:				#The remaining are simply in grey without label
-			gnuplot_state += '  "" u %s:(($%i - %9.5f)*27.2114) notitle lw %3.1f lt 1 lc rgb "grey" w l, \\\n'   	% (gnuplot_time_label, i + 2, INIT_S0_ENERGY,    LW_2)
-		SINGLET_STATES   += 1
-	for i in range(TRIPLET_STATES, state_list[2] + 1):
-		if TRIPLET_STATES < 4: 
-			gnuplot_state += '  "" u %s:(($%i - %9.5f)*27.2114) title "T_%i" lw %3.1f lt 1 lc rgb "%s" w l, \\\n'   % (gnuplot_time_label, i + 2, INIT_S0_ENERGY, i, LW_2, colorT[TRIPLET_STATES])
+		if singlets < 4:						# The first 4 singlets are displyed in blue
+			gnuplot_state += f' "" u {t_label}:((${i+2} - {s0_ene:9.5f})*{PARAM_FILE.ev_au_conv}) title "S_{i}" lw {lw_2:3.1f} lt 1 lc rgb "{PARAM_FILE.shadeofblue[[singlets]]}" w l, \\\n'
+		else:									# The remaining are simply in grey without label
+			gnuplot_state += f' "" u {t_label}:((${i+2} - {s0_ene:9.5f})*{PARAM_FILE.ev_au_conv}) notitle lw {lw_2:3.1f} lt 1 lc rgb "grey" w l, \\\n'
+		singlets += 1
+	for i in range(triplets, state_list[2] + 1):
+		if triplets < 4: 
+			gnuplot_state += f' "" u {t_label}:((${i+2} - {s0_ene:9.5f})*{PARAM_FILE.ev_au_conv}) title "T_{i}" lw {lw_2:3.1f} lt 1 lc rgb "{PARAM_FILE.shadeofgreen[[triplets]]}" w l, \\\n'
 		else:
-			gnuplot_state += '  "" u %s:(($%i - %9.5f)*27.2114) notitle lw %3.1f lt 1 lc rgb "grey" w l, \\\n'      % (gnuplot_time_label, i + 2, INIT_S0_ENERGY,    LW_2)
-		TRIPLET_STATES	+=1
-
+			gnuplot_state += f' "" u {t_label}:((${i+2} - {s0_ene:9.5f})*{PARAM_FILE.ev_au_conv}) notitle lw {lw_2:3.1f} lt 1 lc rgb "grey" w l, \\\n'
+		triplets	+=1
 	# Plot the running trajecotry in back empty circles
-	gnuplot_state += '  "" u %s:(($%i - %9.5f)*27.2114) notitle lw %3.1f lc rgbcolor "#000000" pt 6 ps 2.0 w p\n\n'	% (gnuplot_time_label, nstates + 2, INIT_S0_ENERGY, LW_1)
+	gnuplot_state += f' "" u {t_label}:((${nstates+2} - {s0_ene:9.5f})*{PARAM_FILE.ev_au_conv}) notitle lw {lw_1:3.1f} lc rgbcolor "#000000" pt 6 ps 2.0 w p\n\n'
 	return gnuplot_state
 
 #----------------------------------------------------------------------------------------------------------------------------#
-def WRITE_SH_STATE_GP(nmstates, state_list, gnuplot_time_label, colorS, colorT, DATAFILE, TIME_RESTART, RESTART):
-	LW_1            = 3.0;	LW_2            = 6.0
-	SINGLET_STATES  = 0  ;	TRIPLET_STATES	= 0
-	gnuplot_state	= ''
-# We assign the spin at each state reading the information from the SHARC out file
-	with open(DATAFILE, "r") as FILE_MCH:
+def WRITE_SH_STATE_GP(nmstates, state_list, t_label, datafile, time_restart, restart):
+	singlets  = 0; triplets = 0
+	lw_1 = 3.0;	lw_2 = 6.0
+	# We assign the spin at each state reading the information from the SHARC out file
+	with open(datafile, "r") as FILE_MCH:
 		for i, lisline in enumerate(FILE_MCH):
 			if i > 2:
 				break
 	lisline = lisline.split()                                       # The lisline will contain the result at t = 0
 
-	gnuplot_state   += '  plot "%s" u %s:%i title "Total Energy" lw %6.2f lc rgbcolor "#000000" w l, \\\n'  	% (DATAFILE, gnuplot_time_label, 4, LW_1)
+	gnuplot_state = f' plot "{datafile}" u {t_label}:4 title "Total Energy" lw {lw_1:6.2f} lc rgbcolor "#000000" w l, \\\n'
 	for i in range(nmstates):
-		if int(float(lisline[4 + nmstates + i])) == 0 :		# The spin of the i-th state is zero (singlet)
-			if SINGLET_STATES < 4:				# The first 4 singlets are displyed in blue 
-				gnuplot_state += '  "" u %s:%i title "S_%i" lw %6.2f lt 1 lc rgb "%s" w l	, \\\n' % (gnuplot_time_label, 5 + i, SINGLET_STATES, LW_2, colorS[SINGLET_STATES])
+		if int(float(lisline[4 + nmstates + i])) == 0 :				# The spin of the i-th state is zero (singlet)
+			if singlets < 4:				# The first 4 singlets are displyed in blue 
+				gnuplot_state += f' "" u {t_label}:{5+i} title "S_{singlets}" lw {lw_2:6.2f} lt 1 lc rgb "{PARAM_FILE.shadeofblue[singlets]}" w l	, \\\n'
 			else:						# The remaining are simply in grey without label
-				gnuplot_state += '  "" u %s:%i notitle lw %6.2f lt 1 lc rgb "grey" w l		, \\\n' % (gnuplot_time_label, 5 + i, 		      LW_2)
-			SINGLET_STATES	      += 1
+				gnuplot_state += f' "" u {t_label}:{5+i} notitle              lw {lw_2:6.2f} lt 1 lc rgb "grey" w l	, \\\n'
+			singlets	      += 1
 
-		if int(float(lisline[4 + nmstates + i])) == 2 :		# The spin of the i-th state is two (triplets)
-			if (TRIPLET_STATES < state_list[2]):		# state_list[2] = Number of triplet states
-				gnuplot_state += '  "" u %s:%i title "T_%i" lw %6.2f lt 1 lc rgb "%s" w l	, \\\n' % (gnuplot_time_label, 5 + i, triplet + 1, LW_2, colorT[TRIPLET_STATES])
-			else: 						# Plot the title only for one of the three components of the triplet states
-				gnuplot_state += '  "" u %s:%i notitle lw %6.2f lt 1 lc rgb "%s" w l		, \\\n'	% (gnuplot_time_label, 5 + i, 		   LW_2, colorT[TRIPLET_STATES % state_list[2] ])
-			TRIPLET_STATES	      += 1
+		if int(float(lisline[4 + nmstates + i])) == 2 :				# The spin of the i-th state is two (triplets)
+			if (triplets < state_list[2]):							# state_list[2] = Number of triplet states
+				gnuplot_state += f' "" u {t_label}:{5+i} title "T_{triplets + 1}" lw {lw_2:6.2f} lt 1 lc rgb "{PARAM_FILE.shadeofgreen[singlets]}" w l	, \\\n'
+			else: 													# Plot the title only for one of the three components of the triplet states
+				gnuplot_state += f' "" u {t_label}:{5+i} notitle                  lw {lw_2:6.2f} lt 1 lc rgb "{PARAM_FILE.shadeofgreen[singlets]}" w l	, \\\n'
+			triplets	      += 1
 # After three triplet (0,1,2) we want reinitilize the counters. Triplet are printed T1x, T2x, ..., T1y, T2y, ..., T1z, ...
 # After printing the label for the first three we can stop printing title (stoptitle is initialized at 1 at this point and no other title are printed) 
-	gnuplot_state   += '  "" u %s:%i notitle lw %6.2f lc rgbcolor "#000000" pt 6 ps 2.0 w p '			% (gnuplot_time_label, 3, LW_1)
+	gnuplot_state += f' "" u {t_label}:3 notitle lw {lw_1:6.2f} lc rgbcolor "#000000" pt 6 ps 2.0 w p '
 
 	# In case you have restarted the dynamics will be added the plot belonging to the last part of the previous dynamics.
-	if RESTART == True:                                             # This means that the dynamics with SHarc has been restarted from NX.
-		shadeofgrey     = ["#808080","#A9A9A9","#C0C0C0","#DCDCDC", "#F5F5F5"]
-		gnuplot_state   += '       , \\\n'                      # We want write so we need to add ,\
-		gnuplot_state   += WRITE_SH_STATE_GP_RESTARTED_FROM_NX(state_list, shadeofgrey, TIME_RESTART, lisline)
-
+	if restart == True:                                             # This means that the dynamics with SHarc has been restarted from NX.
+		gnuplot_state   += '       , \\\n'                      	# We want write so we need to add ,\
+		gnuplot_state   += WRITE_SH_STATE_GP_RESTARTED(state_list, time_restart, lisline)
 	gnuplot_state   += '\n\n'        
 	return gnuplot_state
 
 #----------------------------------------------------------------------------------------------------------------------------#
-def WRITE_SH_STATE_GP_RESTARTED_FROM_NX(state_list, colorS, TIME_RESTART, lisline):
-	gnuplot_state	= '' ; SINGLET_STATES	= 0;
-	LW_1            = 3.0;	LW_2            = 5.0;
- 
-	DYN_DATAFILE    = "../RESULTS/en.dat"                   # For now we assumes that the previus dyn was with NX in the folder ../RESULTS/ This can be modified in the future
-	TIME_END_OF_DYN = float(subprocess.check_output(['tail', '-1', DYN_DATAFILE]).split()[0])       # List time found in DYN_DATAFILE is the point at which the dynamics end
-# The S0 energy of the parent dynamics at the TIME_RESTART
-	INIT_S1_ENERGY  = float(subprocess.check_output(['tail', '-' + str(int( (TIME_END_OF_DYN - TIME_RESTART) * 2 + 1 )), DYN_DATAFILE]).split()[2])
-	scaling         = - (float(lisline[5])/PARAM_FILE.ev_au_conv) + INIT_S1_ENERGY                              # the scaling for the parent dynamics will be so that the S1 energies at 
-# TIME_RESTART will be exactly the same for both calculation (we will have the line conciding at the same point).
-#	print (TIME_END_OF_DYN, INIT_S1_ENERGY, scaling, lisline[5])					# !!5 is the index for energy S1!!
+def WRITE_SH_STATE_GP_RESTARTED(state_list, time_restart, lisline):
+	gnuplot_state = ''; singlets = 0;
+	lw_1 = 3.0; lw_2 = 5.0;
+	datafile = "../RESULTS/en.dat"                   				# For now we assumes that the previus dyn was with NX in the folder ../RESULTS/ This can be modified in the future
+	end_dyn = GET_DATA(datafile, 0)
+	# The S0 energy of the parent dynamics at the time_restart
+	s1_ene = float(subprocess.check_output(['tail', '-' + str(int( (end_dyn - time_restart) * 2 + 1 )), datafile]).split()[2])
+	scaling = -(float(lisline[5])/PARAM_FILE.ev_au_conv) + s1_ene                              # the scaling for the parent dynamics will be so that the S1 energies at 
+	# time_restart will be exactly the same for both calculation (we will have the line conciding at the same point).
+	# print (TIME_END_OF_DYN, s1_ene, scaling, lisline[5])					# !!5 is the index for energy S1!!
 	for i in range(state_list[0]):	# Here the number the singlet but could be a sub set of the number of electronic states in the NX dynamics
-		gnuplot_state += '  "%s" u 1:(($%i - %9.5f)*27.2114) notitle lw %3.1f lt 1 lc rgb "%s" w l, \\\n'% (DYN_DATAFILE, i + 2, scaling, LW_2, colorS[SINGLET_STATES])
-		SINGLET_STATES   += 1
+		gnuplot_state += f' "{datafile}" u 1:((${i+2} - {scaling:9.5f})*{PARAM_FILE.ev_au_conv}) notitle lw {lw_2:3.1f} lt 1 lc rgb "{PARAM_FILE.shadeofgrey[singlets]}" w l, \\\n'
+		singlets   += 1
 	return gnuplot_state
 
 #----------------------------------------------------------------------------------------------------------------------------#

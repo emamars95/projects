@@ -75,7 +75,6 @@ def main():
 	timestep                = TEST_DICTIONARY_KEY(dictionary.get('time_step'))
 	template_geo            = dictionary.get('template_geo').rstrip()
 	# --------------------------- END OF READING THE PARAMETERS ------------------------------------ #
-	print(state_list)
 	if calculation.upper() == "NX":		# NX
 		time_dyn, time_xyz = NX_CHECK_TIME()
 	elif calculation.upper() == "SH": 	# SH
@@ -113,9 +112,9 @@ def main():
 	gnuplot_script += TRAJECTORY_MODULES.WRITE_HEAD_GP(outname, rangexmin, rangexmax, rangeymin, rangeymax, positionlabel1)
 	#We write the second part, containing the information to plot the electronic states
 	if calculation == "NX":
-		gnuplot_script += TRAJECTORY_MODULES.WRITE_NX_STATE_GP(nstates,  state_list, scaling, gnuplot_time_label, "en.dat"                   , time_restart, restart)
+		gnuplot_script += TRAJECTORY_MODULES.WRITE_NX_STATE_GP(nstates,  state_list, scaling, gnuplot_time_label, "en.dat")
 	if calculation == "SH":
-		gnuplot_script += TRAJECTORY_MODULES.WRITE_SH_STATE_GP(nmstates, state_list,          gnuplot_time_label, "output_data/expec_MCH.out", time_restart, restart)
+		gnuplot_script += TRAJECTORY_MODULES.WRITE_SH_STATE_GP(nmstates, state_list, gnuplot_time_label, "output_data/expec_MCH.out", time_restart, restart)
 	#We write the last part containing the geometrical coordinates and the breakline at time = timebreak
 	gnuplot_script += TRAJECTORY_MODULES.WRITE_COORDS_AND_BREAKLINE(rangeymax, rangey2min, rangey2max, positionlabel2, timebreak, breakreason, input_coord, gnuplot_time_label, label_molecule)
 	#We write the string into the file (that will remain in the folder)

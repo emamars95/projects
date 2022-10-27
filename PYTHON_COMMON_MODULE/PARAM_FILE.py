@@ -45,6 +45,7 @@ qy_file_restart = "QY_restart.dat"
 viridis = ['#440154', '#472c7a' ,'#3b518b', '#2c718e', '#21908d', '#27ad81', '#5cc863','#aadc32', '#fde725']    # Viridis palette
 shadeofblue     = ["#084594","#2171B5","#9ECAE1","#C6DBEF"]
 shadeofgreen    = ["#005A32","#238B45","#A1D99B","#C7E9C0"]
+shadeofgrey     = ["#808080","#A9A9A9","#C0C0C0","#DCDCDC", "#F5F5F5"]
 
 class BH3NH3:
     # Name of the molecule
