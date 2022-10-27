@@ -75,6 +75,7 @@ def main():
 	timestep                = TEST_DICTIONARY_KEY(dictionary.get('time_step'))
 	template_geo            = dictionary.get('template_geo').rstrip()
 	# --------------------------- END OF READING THE PARAMETERS ------------------------------------ #
+	print(state_list)
 	if calculation.upper() == "NX":		# NX
 		time_dyn, time_xyz = NX_CHECK_TIME()
 	elif calculation.upper() == "SH": 	# SH
