@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 
 import os
-from os.path import isfile
+from os.path                import isfile
 import glob
-from re import template
-import sys
 import subprocess
 
-from NX_MODULES     import GET_EXCITATION_ENERGY, SUBMIT_TRAJECTORIES, LABEL_TRAJ, GET_TIME_BASED_ON_D1
-from TOOLS          import sorted_nicely, GET_DATA
-from TRAJECTORY_MODULES import GET_MOLECULE_LABEL, READING_PARAMETER_FILE
+from NX_MODULES             import GET_EXCITATION_ENERGY, SUBMIT_TRAJECTORIES, LABEL_TRAJ, GET_TIME_BASED_ON_D1
+from TOOLS                  import sorted_nicely, GET_DATA
+from TRAJECTORY_MODULES     import GET_MOLECULE_LABEL, READING_PARAMETER_FILE
 import PARAM_FILE
 
 PWD   = os.getcwd()
@@ -123,7 +121,7 @@ def CHECK_REACTIVITY(traj_name, result_folder, time_traj, summary, data, data_re
                 if restart_folder:
                     result_folder = restart_folder[0] + '/RESULTS/'
                     coordinate_file = result_folder + PARAM_FILE.coordinate_file
-                    if not os.path.isfile(coordinate_file):
+                    if not isfile(coordinate_file):
                         PLOT_TRAJ_FINISHED(traj_name, result_folder, time_traj, PARAM_FILE.BH3NH3.restart_template)
                     *binx, data_restart = CHECK_REACTIVITY_BH3NH3(coordinate_file, summary, data_restart)
         else: 
@@ -157,9 +155,9 @@ def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder):
 # and the excited state dynamics is fully stopped. In such cases, we do not want to plot them again. However, maybe we want restart the ground  #
 # state dynamics.  
 
-    if os.path.isfile(result_folder + '/' + PARAM_FILE.dont_analyze_file):      # If the file is present in the folder
+    if isfile(result_folder + '/' + PARAM_FILE.dont_analyze_file):      # If the file is present in the folder
         summary += f"FINISHED AT {float(time_traj):6.1f} fs"                    # The plots will be not generated again
-        if os.path.isfile(result_folder + '/' + PARAM_FILE.error_dyn):          # If the error file (due energy discontinuity) is present in the folder
+        if isfile(result_folder + '/' + PARAM_FILE.error_dyn):          # If the error file (due energy discontinuity) is present in the folder
             summary += "\t ENERGY DISCONTINUITY"
             data += "ENERGY_DISCONTINUITY"
         else: 
@@ -216,8 +214,8 @@ def CHECK_DYNAMICS():
     traj_file.close()      
     summary_file.close()
     traj_file_restart.close()
-    if os.stat(PARAM_FILE.traj_file_restart).st_size == 0:
-        os.remove(PARAM_FILE.traj_file_restart) 
+    if os.stat(PWD + "/" + PARAM_FILE.traj_file_restart).st_size == 0:
+        os.remove(PWD + "/" + PARAM_FILE.traj_file_restart) 
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def SUBMIT_DYNAMICS():
