@@ -104,7 +104,8 @@ def TAIL_COORDINATES_FILE(result_folder, line):
 def CHECK_REACTIVITY(result_folder, time_traj, summary, data):
         # Here we have to check at which molecule we are dealing with. Depending on the molecule the geometrical coordinates can be     #
         # different and therefore, we have to adopt different procedure.                                                                #
-        *binx, template_geo = READING_PARAMETER_FILE("%s/%s" %(result_folder, PARAM_FILE.input_for_traj))
+        dictionary = READING_PARAMETER_FILE(f"{result_folder}/{PARAM_FILE.input_for_traj}")
+        template_geo = dictionary.get('template_geo')
         which_molecule, molecule_class = GET_MOLECULE_LABEL(template_geo)
         # Now in which_molecule we have the label of the molecule we are dealing with. 
         if   which_molecule == "HPP":
@@ -214,7 +215,7 @@ def CHECK_DYNAMICS():
     summary_file = open(PARAM_FILE.summary_file  , 'w')
     traj_file = open(PARAM_FILE.traj_file, 'w')
     folder = 'RESULTS/'
-    #ROUTINE_DYNAMICS(allname, summary_file, traj_file, folder, path_to_inputfile = PWD)
+    ROUTINE_DYNAMICS(allname, summary_file, traj_file, folder, path_to_inputfile = PWD)
 
     print (hline)
     print ("*****       The restarted dynamics will be checked         *****\n")
