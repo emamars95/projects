@@ -49,7 +49,7 @@ def MAKE_GEOM_VELOC_NX(time, time_step):
         os.system("rm -f out.tmp")
         return
 
-# Chose random trajectories from a bunch 
+# Chose random trajectories from a bunch s
 def LABEL_TRAJ(PWD, wanted_traj, total_traj):
 	ALLNAME = sorted_nicely(glob.glob("TRAJ*"))
 	prob	= wanted_traj/total_traj; i = 0;
