@@ -204,11 +204,13 @@ def ROUTINE_DYNAMICS(allname, summary_file, traj_file, folder):
     for traj_name in allname:
         traj_folder = f'{PWD}/{traj_name}/' 
         result_folder = traj_folder + folder
+        print(result_folder)
         if os.path.isdir(result_folder):                        # If some dynamics has been restarted then we check the dynamics output
-           os.chdir(traj_folder)                 
-           summary, data, data_restart = CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder)    
-           summary_file.write(summary + '\n')    
-           traj_file.write(data + '\n')           
+            print(traj_name)
+            os.chdir(traj_folder)                 
+            summary, data, data_restart = CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder)    
+            summary_file.write(summary + '\n')    
+            traj_file.write(data + '\n')           
     traj_file.close()      
     summary_file.close()
 
@@ -222,7 +224,7 @@ def CHECK_DYNAMICS():
     summary_file = open(PARAM_FILE.summary_file  , 'w')
     traj_file = open(PARAM_FILE.traj_file, 'w')
     folder = 'RESULTS/'
-    ROUTINE_DYNAMICS(allname, summary_file, traj_file, folder)
+    #ROUTINE_DYNAMICS(allname, summary_file, traj_file, folder)
     print (hline)
     print ("*****       The restarted dynamics will be checked         *****\n")
     print (hline) 
