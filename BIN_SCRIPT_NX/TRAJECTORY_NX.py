@@ -93,10 +93,9 @@ def TAIL_COORDINATES_FILE(result_folder, line):
     os.system(f"head -{line} {coord_file} > {coord_file_to_use}")
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
-def CHECK_REACTIVITY(result_folder, time_traj, summary, data):
+def CHECK_REACTIVITY(result_folder, time_traj, summary, data, dictionary):
         # Here we have to check at which molecule we are dealing with. Depending on the molecule the geometrical coordinates can be     #
         # different and therefore, we have to adopt different procedure.                                                                #
-        dictionary = READING_PARAMETER_FILE(f"{result_folder}/{PARAM_FILE.input_for_traj}")
         template_geo = dictionary.get('template_geo')
         which_molecule, molecule_class = GET_MOLECULE_LABEL(template_geo)
         # Now in which_molecule we have the label of the molecule we are dealing with. 
@@ -131,9 +130,20 @@ def COPY_FILE(traj_name, result_folder, file_to_copy, time_traj, path_to_inputfi
         os.system(f"sed -i '4s/0/{str(time_traj)}/'      {result_folder}/{file_to_copy}")    # We update the INPUT files with maxxrange.
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
-def PLOT_TRAJ_FINISHED(traj_name, result_folder, time_traj, path_to_inputfile):
+def GENERATE_D1_FILE(file, dictionary):
+    d1file = open(PARAM_FILE.d1_file, 'w')
+    i = 0; timestep = dictionary.get('time_step')
+    with open(file, 'r') as moldyn:
+        for line in moldyn:
+            if 'D1 diagnostic for MP2:' in line:
+                time = timestep * i
+                d1file.write(f'{time:5.3f}\t{float(line.split()[4]):7.4f}')
+                i += 1
+                
+#-----------------------------------------------------------------------------------------------------------------------------------------------------#
+def PLOT_TRAJ_FINISHED(traj_name, result_folder, time_traj, path_to_inputfile, dictionary):
     print(f'{traj_name}\t is just finished. It will be fully analyzed automatically.\n')
-    os.chdir(result_folder)
+    GENERATE_D1_FILE(f'{result_folder}/../moldyn.log', dictionary)
     COPY_FILE(traj_name, result_folder, PARAM_FILE.input_for_traj, time_traj, path_to_inputfile)       # We modify the two file changing name of the trajectories and the time
     os.system(f"{PARAM_FILE.plot_traj_script} {PARAM_FILE.input_for_traj}")                             # RUN our script to generate trajectory plots.
     if time_traj > 100:
@@ -145,29 +155,26 @@ def PLOT_TRAJ_FINISHED(traj_name, result_folder, time_traj, path_to_inputfile):
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder, path_to_inputfile):
     # The two string are initialized with the name of the trajectory.
+    dictionary = READING_PARAMETER_FILE(f"{result_folder}/{PARAM_FILE.input_for_traj}")
     print(f"{PARAM_FILE.bcolors.OKBLUE}*****  The dynamics of {traj_name:<10} is checked         *****\n{PARAM_FILE.bcolors.ENDC}") 
     summary = str(traj_name) + "\t"                                             # We add the name of the trajectory at the first column
     data = str(traj_name) + "\t"
     data += GET_EXCITATION_ENERGY(PWD + "/makedir.log", traj_name) + "\t"       # We collect the excitation energy from the makedir.log file
 
     time_traj = GET_DATA(result_folder + "/en.dat", 0)                          # Collect TRAJ time (record 0) from the en.dat file
-
 # This section is dedicated in case the file DONT_ANALYZE is found in the RESULT folder. This file is created after that plots are generated    #
 # and the excited state dynamics is fully stopped. In such cases, we do not want to plot them again. However, maybe we want restart the ground  #
 # state dynamics.  
-
     if isfile(result_folder + '/' + PARAM_FILE.dont_analyze_file):              # If the file is present in the folder
         summary += f"FINISHED AT {float(time_traj):6.1f} fs"                    # The plots will be not generated again
         if isfile(result_folder + '/' + PARAM_FILE.error_dyn):                  # If the error file (due energy discontinuity) is present in the folder
             summary += "\t ENERGY DISCONTINUITY"
             data += "ENERGY_DISCONTINUITY"
         else: 
-            summary, data = CHECK_REACTIVITY(result_folder, time_traj, summary, data)
-
+            summary, data = CHECK_REACTIVITY(result_folder, time_traj, summary, data, dictionary)
 # This section is dedicated in case the file DONT_ANALYZE is NOT found in the result folder. In this cases the dynamics is not stopped yet    #
 # or at least it is just finished. In this last case, the file DONT_ANALYZE will be created, warning that is not necessary to analyze         #
 # the data anymore. In case the plot has never been generated, the input files are also copied in the REUSULT folder.                #        
-
     else:
         ERROR_SIGNAL        = False; STOP_SIGNAL        = False    # Logical varaibles to indicate if an error is find in the NX dynamics
         # Read from moldyn.log if there is an error
@@ -182,7 +189,7 @@ def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder, path_to_inputfile):
             data     += "ERROR"
         # JUST FINISHED TRAJECTORY! IT HAS TO BE PLOTTED AND ANALYZED
         elif STOP_SIGNAL:                                    # If the dynamics is just finished!
-            PLOT_TRAJ_FINISHED(traj_name, result_folder, time_traj, path_to_inputfile)
+            PLOT_TRAJ_FINISHED(traj_name, result_folder, time_traj, path_to_inputfile, dictionary)
             summary += f"* JUST FINISHED *\t{float(time_traj):8.2f} fs"      
             os.system('grep "d1 diagnostic for MP2:" ' + traj_folder + '/moldyn.log | awk \'{printf "%9.2f\\t%s\\n", counter/2, $5; counter++}\' > d1_values')
         # STILL RUNNING.
