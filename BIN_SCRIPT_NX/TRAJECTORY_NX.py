@@ -56,9 +56,9 @@ def MAKE_COORDINATES_FILE(result_folder, time):
     with open(coord_file, 'r') as fp:
         for i, line in enumerate(fp):
             fpnew.write(line)
-            time_to_compare = float(line.split()[0])
-            if (time == time_to_compare) and (i > 1):                 # The time is the first column of the file
-                break 
+            if i > 1:
+                if time == float(line.split()[0]):              # The time is the first column of the file
+                    break 
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def CHECK_REACTIVITY(result_folder, time_traj, summary, data, time_validity):
