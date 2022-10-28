@@ -107,10 +107,10 @@ def GENERATE_D1_FILE(result_folder):
 def PLOT_TRAJ_FINISHED(traj_name, result_folder, time_traj, path_to_inputfile):
     print(f'{traj_name}\t is just finished. It will be fully analyzed automatically.\n')
     COPY_FILE(traj_name, result_folder, PARAM_FILE.input_for_traj, time_traj, path_to_inputfile)        # We modify the two file changing name of the trajectories and the time
-    os.system(f"bash {PARAM_FILE.plot_traj_script} {PARAM_FILE.input_for_traj}")                        # RUN our script to generate trajectory plots.
+    os.system(f"{PARAM_FILE.plot_traj_script} {PARAM_FILE.input_for_traj}")                             # RUN our script to generate trajectory plots.
     if time_traj > 100:
         COPY_FILE(traj_name, result_folder, PARAM_FILE.input_for_zoom, time_traj, path_to_inputfile)
-        os.system(f"bash {PARAM_FILE.plot_traj_script} {PARAM_FILE.input_for_zoom} &>/dev/null")        # RUN our script to generate the trajectory of the last part of the dynamics.    
+        os.system(f"{PARAM_FILE.plot_traj_script} {PARAM_FILE.input_for_zoom} &>/dev/null")             # RUN our script to generate the trajectory of the last part of the dynamics.    
     os.system(f'touch {result_folder}/{PARAM_FILE.dont_analyze_file}')                                  # We write the file to not analyze the folder again   
     GENERATE_D1_FILE(result_folder)
     os.chdir(PWD)
