@@ -10,6 +10,7 @@ from NX_MODULES             import GET_EXCITATION_ENERGY, SUBMIT_TRAJECTORIES, L
 from TOOLS                  import sorted_nicely, GET_DATA
 from TRAJECTORY_MODULES     import GET_MOLECULE_LABEL, READING_PARAMETER_FILE
 import PARAM_FILE
+from BH3NH3 import CHECK_REACTIVITY_BH3NH3
 
 PWD   = os.getcwd()
 hline = "*****************************************************************\n" 
@@ -78,7 +79,6 @@ def CHECK_REACTIVITY(result_folder, time_traj, summary, data, time_validity):
         elif which_molecule == "OXALYL_fluoride":
                 summary, data = CHECK_REACTIVITY_NRMECI(result_folder, summary, data)
         elif which_molecule == "BH3NH3":
-                from BH3NH3 import CHECK_REACTIVITY_BH3NH3
                 time_d1, d1 = GET_TIME_BASED_ON_D1(result_folder, 0, time_traj)                     # get time where dynamics is still valid based on d1
                 if not isfile(f'{result_folder}/{PARAM_FILE.coordinate_file_to_use}') or (time_d1 < time_validity):
                     MAKE_COORDINATES_FILE(result_folder, time_d1)                         
@@ -163,7 +163,7 @@ def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder, path_to_inputfile):
                 MAKE_COORDINATES_FILE(result_folder, time_validity) 
                 summary += f"\t ENERGY DISCONTINUITY at {time_validity}"
                 #data += "ENERGY_DISCONTINUITY" 
-                summary, data = CHECK_REACTIVITY(result_folder, time_traj, summary, data, float(time_validity))
+            summary, data = CHECK_REACTIVITY(result_folder, time_traj, summary, data, float(time_validity))
     else:
         summary  += "   RUNNING   \t%8.2f fs"                %(float(time_traj))
         data     += "RUNNING"    
