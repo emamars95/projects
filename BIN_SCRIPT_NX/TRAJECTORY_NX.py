@@ -122,7 +122,6 @@ def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder, path_to_inputfile):
     summary = str(traj_name) + "\t"                                             # We add the name of the trajectory at the first column
     data = str(traj_name) + "\t"
     data += GET_EXCITATION_ENERGY(PWD + "/makedir.log", traj_name) + "\t"       # We collect the excitation energy from the makedir.log file
-
     time_traj = GET_DATA(result_folder + "/en.dat", 0)                          # Collect TRAJ time (record 0) from the en.dat file
 
     error_signal, stop_signal = False, False
@@ -139,7 +138,7 @@ def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder, path_to_inputfile):
         summary  += "*  ::ERROR::  *\t"
         data     += "ERROR"
     elif stop_signal:                                       # DYNAMICS IS finished NORMALLY!
-        if not isfile ({result_folder}/{PARAM_FILE.dont_analyze_file}):                 # MAKE PLOTS if the file PARAM_FILE.dont_analyze_file is not present
+        if not isfile(f'{result_folder}/{PARAM_FILE.dont_analyze_file}'):                 # MAKE PLOTS if the file PARAM_FILE.dont_analyze_file is not present
             PLOT_TRAJ_FINISHED(traj_name, result_folder, time_traj, path_to_inputfile)
             summary += f"* JUST FINISHED *\t{float(time_traj):8.2f} fs"      
         else:    
@@ -172,7 +171,6 @@ def ROUTINE_DYNAMICS(allname, summary_file, traj_file, folder, path_to_inputfile
     traj_file.close()      
     summary_file.close()
    
-
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 # Subroutine to check the dynamics outcomes
 def CHECK_DYNAMICS():
