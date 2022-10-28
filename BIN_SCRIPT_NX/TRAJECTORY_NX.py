@@ -160,7 +160,7 @@ def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder, path_to_inputfile):
             if isfile(result_folder + '/' + PARAM_FILE.error_dyn):                      # If the error file (due energy discontinuity) is present in the folder
                 summary += "\t ENERGY DISCONTINUITY"
                 with open(f'{result_folder}/{PARAM_FILE.error_dyn}', 'r') as fp:
-                    time_validity = fp.readline()[0]                                             # Time is the first column of the file
+                    time_validity = float(fp.readline()[0])                                             # Time is the first column of the file
                 MAKE_COORDINATES_FILE(result_folder, time_validity) 
                 data += "ENERGY_DISCONTINUITY" 
                 summary, data = CHECK_REACTIVITY(result_folder, time_traj, summary, data, time_validity)
