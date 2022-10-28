@@ -4,12 +4,12 @@ import os
 from os.path                import isfile
 import glob
 import subprocess
+from webbrowser import get
 
 from NX_MODULES             import GET_EXCITATION_ENERGY, SUBMIT_TRAJECTORIES, LABEL_TRAJ, GET_TIME_BASED_ON_D1
 from TOOLS                  import sorted_nicely, GET_DATA
 from TRAJECTORY_MODULES     import GET_MOLECULE_LABEL, READING_PARAMETER_FILE
 import PARAM_FILE
-from BH3NH3 import CHECK_REACTIVITY_BH3NH3
 
 PWD   = os.getcwd()
 hline = "*****************************************************************\n" 
@@ -58,7 +58,7 @@ def CHECK_REACTIVITY(result_folder, time_traj, summary, data):
         # Here we have to check at which molecule we are dealing with. Depending on the molecule the geometrical coordinates can be     #
         # different and therefore, we have to adopt different procedure.   
         dictionary = READING_PARAMETER_FILE(f"{result_folder}/{PARAM_FILE.input_for_traj}")                                                             #
-        template_geo = dictionary.get('template_geo')
+        template_geo, time_step = dictionary.get('template_geo'), dictionary.get('time_step')
         which_molecule, molecule_class = GET_MOLECULE_LABEL(template_geo)
         # Now in which_molecule we have the label of the molecule we are dealing with. 
         if   which_molecule == "HPP":
@@ -73,9 +73,10 @@ def CHECK_REACTIVITY(result_folder, time_traj, summary, data):
         elif which_molecule == "OXALYL_fluoride":
                 summary, data = CHECK_REACTIVITY_NRMECI(result_folder, summary, data)
         elif which_molecule == "BH3NH3":
-                time_d1, d1 = GET_TIME_BASED_ON_D1(result_folder, 0, time_traj)
-                TAIL_COORDINATES_FILE(result_folder, int(time_d1 / 0.5 + 2))                # 1 is the title 1 is time = 0
-                summary += f"\tD1 {d1:5.4f} at TIME {time_d1:5.1f} fs"
+                from BH3NH3 import CHECK_REACTIVITY_BH3NH3
+                time_d1, d1 = GET_TIME_BASED_ON_D1(result_folder, 0, time_traj)                     # get time where dynamics is still valid 
+                TAIL_COORDINATES_FILE(result_folder, int(time_d1 / time_step + 2))                  # 1 is the title 1 is time = 0
+                summary += f"\tD1 {d1:5.4f} at TIME {time_d1:5.1f} fs" 
                 coordinate_file = result_folder + '/' + PARAM_FILE.coordinate_file_to_use
                 summary, data = CHECK_REACTIVITY_BH3NH3(coordinate_file, summary, data)
         else: 
@@ -100,7 +101,7 @@ def GENERATE_D1_FILE(result_folder):
         for line in moldyn:
             if 'D1 diagnostic for MP2:' in line:
                 time = timestep * i
-                d1file.write(f'{time:5.3f}\t{float(line.split()[4]):6.4f}')                 # 4 is the location where to find the D1 value along the dynamics
+                d1file.write(f'{time:5.3f}\t{float(line.split()[4]):6.4f}\n')                 # 4 is the location where to find the D1 value along the dynamics
                 i += 1
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
