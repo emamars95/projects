@@ -89,7 +89,7 @@ def MODIFY_FILE(file_to_modify, time_traj):
     os.system(f"sed -i '4s/0/{str(time_traj)}/'      {file_to_modify}")    # We update the INPUT files with maxxrange.
 
 def COPY_FILE(traj_name, result_folder, file_to_copy, path_to_inputfile):
-    newfile = open(f'{result_folder}/{file_to_copy}')
+    newfile = open(f'{result_folder}/{file_to_copy}', 'w')
     with open(f'{path_to_inputfile}/{file_to_copy}', 'r') as fp:
         for line in fp:
             line = line.replace('traj1', traj_name)
