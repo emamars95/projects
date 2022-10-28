@@ -61,7 +61,6 @@ def main():
 		parameter_file_name	= PARAM_FILE.input_for_traj
 	# --------------------------- READING THE PARAMETERS ------------------------------------------- #
 	dictionary = TRAJECTORY_MODULES.READING_PARAMETER_FILE(parameter_file_name)
-
 	calculation             = dictionary.get('method')             		# SH or NX
 	state_list              = dictionary.get('states')
 	rangexmin               = TEST_DICTIONARY_KEY(dictionary.get('rangexmin'))      	# Xmin and Xmax for
