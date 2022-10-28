@@ -54,9 +54,10 @@ def MAKE_COORDINATES_FILE(result_folder, time):
     coord_file_to_use = result_folder + "/" + PARAM_FILE.coordinate_file_to_use
     fpnew = open(coord_file_to_use, 'w')
     with open(coord_file, 'r') as fp:
-        for line in fp:
+        for i, line in enumerate(fp):
             fpnew.write(line)
-            if time == float(line.split()[0]):                 # The time is the first column of the file
+            time_to_compare = float(line.split()[0])
+            if (time == time_to_compare) and (i > 1):                 # The time is the first column of the file
                 break 
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
