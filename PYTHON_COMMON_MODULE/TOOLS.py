@@ -28,6 +28,7 @@ def GET_DATA_FROM_STRING(FILE, STRING, RECORD):
 def GRADIENT(array, i):
 	grad    = array[i-2]/12 - 2*array[i-1]/3 + 2*array[i+1]/3 - array[i+2]/12
 	return grad
+
 # Discrete Hessian at the 4th order
 def CURVATURE(array,i):	
 	hess	= -array[i-2]/12 + 4*array[i-1]/3 - 5*array[i]/2 + 4*array[i+1]/3 - array[i+2]/12
