@@ -208,6 +208,7 @@ def ROUTINE_DYNAMICS(allname, summary_file, traj_file, folder, path_to_inputfile
             traj_file.write(data + '\n')   
     traj_file.close()      
     summary_file.close()
+    sys.exit()
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 # Subroutine to check the dynamics outcomes
