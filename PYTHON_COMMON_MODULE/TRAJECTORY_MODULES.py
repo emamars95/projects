@@ -10,7 +10,7 @@ from BH3NH3 import BH3NH3
 
 #----------------------------------------------------------------------------------------------------------------------------#
 def COUNTING_STATES(state_list):
-	for i in range(len(state_list)):
+	for i in range(len(state_list.split())):
 		state_list[i] = int(state_list[i])
 	nmstates 	= 0
 	nstates  	= 0

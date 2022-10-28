@@ -5,7 +5,6 @@ from shutil import rmtree, copy, copytree, move
 import sys
 import os
 import random
-import time
 
 from TRAJECTORY_MODULES     import GET_MOLECULE_LABEL, READING_PARAMETER_FILE, COUNTING_STATES, TRAJECTORY_BREAK_NX
 import NX_MODULES
