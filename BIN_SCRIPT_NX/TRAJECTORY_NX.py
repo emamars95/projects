@@ -48,13 +48,18 @@ def CHECK_REACTIVITY_NRMECI(result_folder, summary, data):
     return summary, data
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
-def TAIL_COORDINATES_FILE(result_folder, line):
+def MAKE_COORDINATES_FILE(result_folder, time):
     coord_file = result_folder + "/" + PARAM_FILE.coordinate_file
     coord_file_to_use = result_folder + "/" + PARAM_FILE.coordinate_file_to_use
-    os.system(f"head -{line} {coord_file} > {coord_file_to_use}")
+    fpnew = open(coord_file_to_use, 'w')
+    with open(coord_file, 'r') as fp:
+        for line in fp:
+            fpnew.write(line)
+            if time in line.split()[0]:                 # The time is the first column of the file
+                break 
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
-def CHECK_REACTIVITY(result_folder, time_traj, summary, data):
+def CHECK_REACTIVITY(result_folder, time_traj, summary, data, time_validity):
         # Here we have to check at which molecule we are dealing with. Depending on the molecule the geometrical coordinates can be     #
         # different and therefore, we have to adopt different procedure.   
         dictionary = READING_PARAMETER_FILE(f"{result_folder}/{PARAM_FILE.input_for_traj}")                                                             #
@@ -74,9 +79,10 @@ def CHECK_REACTIVITY(result_folder, time_traj, summary, data):
                 summary, data = CHECK_REACTIVITY_NRMECI(result_folder, summary, data)
         elif which_molecule == "BH3NH3":
                 from BH3NH3 import CHECK_REACTIVITY_BH3NH3
-                time_d1, d1 = GET_TIME_BASED_ON_D1(result_folder, 0, time_traj)                     # get time where dynamics is still valid 
-                TAIL_COORDINATES_FILE(result_folder, int(time_d1 / time_step + 2))                  # 1 is the title 1 is time = 0
-                summary += f"\tD1 {d1:5.4f} at TIME {time_d1:5.1f} fs" 
+                time_d1, d1 = GET_TIME_BASED_ON_D1(result_folder, 0, time_traj)                     # get time where dynamics is still valid based on d1
+                if not isfile(f'{result_folder}/{PARAM_FILE.coordinate_file_to_use}') or (time_d1 < time_validity):
+                    MAKE_COORDINATES_FILE(result_folder, time_d1)                         
+                    summary += f'\tD1 {d1:5.4f} at TIME {time_d1:5.1f} fs' 
                 coordinate_file = result_folder + '/' + PARAM_FILE.coordinate_file_to_use
                 summary, data = CHECK_REACTIVITY_BH3NH3(coordinate_file, summary, data)
         else: 
@@ -97,7 +103,7 @@ def COPY_FILE(traj_name, result_folder, file_to_copy, path_to_inputfile):
     newfile.close()
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
-def GENERATE_D1_FILE(result_folder):
+def MAKE_D1_FILE(result_folder):
     file_moldyn = f'{result_folder}/../moldyn.log'
     dictionary = READING_PARAMETER_FILE(f"{result_folder}/{PARAM_FILE.input_for_traj}")
     d1file = open(PARAM_FILE.d1_file, 'w')
@@ -120,7 +126,7 @@ def PLOT_TRAJ_FINISHED(traj_name, result_folder, time_traj, path_to_inputfile):
         MODIFY_FILE(PARAM_FILE.input_for_zoom, time_traj)
         os.system(f"{PARAM_FILE.plot_traj_script} {PARAM_FILE.input_for_zoom} &>/dev/null")             # RUN our script to generate the trajectory of the last part of the dynamics.    
     os.system(f'touch {result_folder}/{PARAM_FILE.dont_analyze_file}')                                  # We write the file to not analyze the folder again   
-    GENERATE_D1_FILE(result_folder)
+    MAKE_D1_FILE(result_folder)
     os.chdir(PWD)
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -152,9 +158,12 @@ def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder, path_to_inputfile):
         else:    
             summary += f"FINISHED AT {float(time_traj):6.1f} fs"                        # The plots will be not generated again
             if isfile(result_folder + '/' + PARAM_FILE.error_dyn):                      # If the error file (due energy discontinuity) is present in the folder
-                summary += "\t ENERGY DISCONTINUITY"    
-                #data += "ENERGY_DISCONTINUITY" 
-                summary, data = CHECK_REACTIVITY(result_folder, time_traj, summary, data)
+                summary += "\t ENERGY DISCONTINUITY"
+                with open(f'{result_folder}/{PARAM_FILE.error_signal}', 'r') as fp:
+                    time_validity = fp.readline()[0]                                             # Time is the first column of the file
+                MAKE_COORDINATES_FILE(result_folder, time_validity) 
+                data += "ENERGY_DISCONTINUITY" 
+                summary, data = CHECK_REACTIVITY(result_folder, time_traj, summary, data, time_validity)
     else:
         summary  += "   RUNNING   \t%8.2f fs"                %(float(time_traj))
         data     += "RUNNING"    
