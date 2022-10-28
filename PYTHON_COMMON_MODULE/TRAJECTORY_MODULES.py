@@ -349,7 +349,7 @@ def WRITE_COORDS_AND_BREAKLINE(rangeymax, rangey2min, rangey2max, positionlabel2
 	gnuplot_final += gnuplot_coord         								#string is the plot associated with the coordinates analysis
 	# Finally we add a vertical line to indicate at which time the dynamics is not valid anymore
 	if break_reason != False :
-		gnuplot_final += f'\n  set key 0, {rangey2min} \n'
+		gnuplot_final += f'\n  set key at 0, {rangey2min} \n'
 		gnuplot_final += f'  set parametric\n  plot [t=0:{rangeymax:5.3f}] {time_break:5.3f},t w l lw 2.0 lt 1 lc rgbcolor "#FF0000" title "{break_reason}"'
 	gnuplot_final += '\n\nunset multiplot'
 	return gnuplot_final
