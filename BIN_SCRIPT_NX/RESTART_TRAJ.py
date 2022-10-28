@@ -90,10 +90,8 @@ def main():
 			print(f'The parameter are read from the file {PARAM_FILE.input_for_traj}')
 			print('\n')
 			print(hline)
-    # --------------------------- READING THE PARAMETERS --------------------------------------------------	#
-	(binx, state_list, binx, binx, binx, binx,
-    	binx, binx, binx, timestep, template_geo) = READING_PARAMETER_FILE(param_file)
-    # -----------------------------------------------------------------------------------------------------	#
+	dictionary = READING_PARAMETER_FILE(param_file)
+	state_list, timestep, template_geo = dictionary.get('states', 'time_step', 'template_geo')
 	which_molecule, class_molecule = GET_MOLECULE_LABEL(template_geo)
 	natoms = class_molecule.natoms
     # Compute the total number of state used in NX along the dynamics				 	#
