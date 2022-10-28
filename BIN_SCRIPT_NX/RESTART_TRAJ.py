@@ -91,7 +91,7 @@ def main():
 			print('\n')
 			print(hline)
 	dictionary = READING_PARAMETER_FILE(param_file)
-	state_list, timestep, template_geo = dictionary.get('states', 'time_step', 'template_geo')
+	state_list, timestep, template_geo = dictionary.get('states'), dictionary.get('time_step'), dictionary.get('template_geo')
 	which_molecule, class_molecule = GET_MOLECULE_LABEL(template_geo)
 	natoms = class_molecule.natoms
     # Compute the total number of state used in NX along the dynamics				 	#
