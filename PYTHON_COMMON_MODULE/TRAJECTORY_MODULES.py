@@ -20,7 +20,7 @@ def COUNTING_STATES(state_list):
 		nstates 	+= i 
 	return nmstates, nstates
 
-# --------------------------- READING THE PARAMETERS ------------------------------------------- #
+#----------------------------------------------------------------------------------------------------------------------------#
 def READING_PARAMETER_FILE(parameter_file_name):
 	with open(parameter_file_name, "r") as parameter_file:
 		data = parameter_file.read()
