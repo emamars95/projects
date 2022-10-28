@@ -61,31 +61,32 @@ def MAKE_COORDINATES_FILE(result_folder, time):
                     break 
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
-def CHECK_REACTIVITY(result_folder, time_traj, summary, data, time_validity):
+def CHECK_REACTIVITY(result_folder, time_traj, summary, data, time_validity, check):
         # Here we have to check at which molecule we are dealing with. Depending on the molecule the geometrical coordinates can be     #
         # different and therefore, we have to adopt different procedure.   
         dictionary = READING_PARAMETER_FILE(f"{result_folder}/{PARAM_FILE.input_for_traj}")                                                             #
-        template_geo, time_step = dictionary.get('template_geo'), dictionary.get('time_step')
+        template_geo = dictionary.get('template_geo')
         which_molecule, molecule_class = GET_MOLECULE_LABEL(template_geo)
         # Now in which_molecule we have the label of the molecule we are dealing with. 
         if   which_molecule == "HPP":
-                summary, data = CHECK_REACTIVITY_HPP(result_folder, summary, data)
-                restart_folder = glob.glob(result_folder + "../XMS-RESTART-12-9*")[0]      # Name in which the trajectory was restarted for HPP
+            summary, data = CHECK_REACTIVITY_HPP(result_folder, summary, data)
+            restart_folder = glob.glob(result_folder + "../XMS-RESTART-12-9*")[0]      # Name in which the trajectory was restarted for HPP
         elif which_molecule == "PYRONE":
-                summary, data = CHECK_REACTIVITY_NRMECI(result_folder, summary, data)
+            summary, data = CHECK_REACTIVITY_NRMECI(result_folder, summary, data)
         elif which_molecule == "FORMALDEHYDE":
-                summary, data = CHECK_REACTIVITY_NRMECI(result_folder, summary, data)
+            summary, data = CHECK_REACTIVITY_NRMECI(result_folder, summary, data)
         elif which_molecule == "ACROLEIN":
-                summary, data = CHECK_REACTIVITY_NRMECI(result_folder, summary, data)
+            summary, data = CHECK_REACTIVITY_NRMECI(result_folder, summary, data)
         elif which_molecule == "OXALYL_fluoride":
-                summary, data = CHECK_REACTIVITY_NRMECI(result_folder, summary, data)
+            summary, data = CHECK_REACTIVITY_NRMECI(result_folder, summary, data)
         elif which_molecule == "BH3NH3":
+            if check: 
                 time_d1, d1 = GET_TIME_BASED_ON_D1(result_folder, 0, time_traj)                     # get time where dynamics is still valid based on d1
                 if not isfile(f'{result_folder}/{PARAM_FILE.coordinate_file_to_use}') or (time_d1 < time_validity):
                     MAKE_COORDINATES_FILE(result_folder, time_d1)                         
                     summary += f'\tD1 {d1:5.4f} at TIME {time_d1:5.1f} fs' 
-                coordinate_file = result_folder + '/' + PARAM_FILE.coordinate_file_to_use
-                summary, data = CHECK_REACTIVITY_BH3NH3(coordinate_file, summary, data)
+            coordinate_file = result_folder + '/' + PARAM_FILE.coordinate_file_to_use
+            summary, data = CHECK_REACTIVITY_BH3NH3(coordinate_file, summary, data)
         else: 
             raise ValueError (f'Value not recognized in {template_geo}')
         return summary, data
@@ -131,7 +132,7 @@ def PLOT_TRAJ_FINISHED(traj_name, result_folder, time_traj, path_to_inputfile):
     os.chdir(PWD)
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
-def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder, path_to_inputfile):
+def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder, path_to_inputfile, check):
     # The two string are initialized with the name of the trajectory.
     print(f"{PARAM_FILE.bcolors.OKBLUE}*****  The dynamics of {traj_name:<10} is checked         *****\n{PARAM_FILE.bcolors.ENDC}") 
     summary = str(traj_name) + "\t"                                             # We add the name of the trajectory at the first column
@@ -166,15 +167,14 @@ def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder, path_to_inputfile):
                 #data += "ENERGY_DISCONTINUITY" 
             else:
                 time_validity = 100000.00
-            summary, data = CHECK_REACTIVITY(result_folder, time_traj, summary, data, time_validity)
+            summary, data = CHECK_REACTIVITY(result_folder, time_traj, summary, data, time_validity, check)
     else:
         summary  += "   RUNNING   \t%8.2f fs"                %(float(time_traj))
         data     += "RUNNING"    
     return summary, data
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
-def ROUTINE_DYNAMICS(allname, summary_file, traj_file, folder, path_to_inputfile):
-    import sys
+def ROUTINE_DYNAMICS(allname, summary_file, traj_file, folder, path_to_inputfile, check):
     summary_file = open(summary_file, 'w')
     traj_file = open(traj_file, 'w')
     # For the folder present in PWD we enter sequentially in each of them
@@ -183,7 +183,7 @@ def ROUTINE_DYNAMICS(allname, summary_file, traj_file, folder, path_to_inputfile
         result_folder = glob.glob(traj_folder + folder)
         if result_folder:
             os.chdir(traj_folder)                 
-            summary, data = CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder[0], path_to_inputfile)    
+            summary, data = CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder[0], path_to_inputfile, check)    
             summary_file.write(summary + '\n')    
             traj_file.write(data + '\n')   
     traj_file.close()      
@@ -197,13 +197,13 @@ def CHECK_DYNAMICS():
     print ("*****             The dynamics will be checked              *****\n")
     print (hline) 
     folder = 'RESULTS/'
-    ROUTINE_DYNAMICS(allname, PARAM_FILE.summary_file, PARAM_FILE.traj_file, folder, path_to_inputfile = PWD)
+    ROUTINE_DYNAMICS(allname, PARAM_FILE.summary_file, PARAM_FILE.traj_file, folder, path_to_inputfile = PWD, check = True)
     print (hline)
     print ("*****       The restarted dynamics will be checked         *****\n")
     print (hline) 
     folder = 'UMP2*/RESULTS/'
     path_to_inputfile = '/ddn/home/fzzq22/CODE_AND_SCRIPT/TEMPLATE_RESTARTs/NX_UMP2'
-    ROUTINE_DYNAMICS(allname, PARAM_FILE.summary_file_restart, PARAM_FILE.traj_file_restart, folder, path_to_inputfile)
+    ROUTINE_DYNAMICS(allname, PARAM_FILE.summary_file_restart, PARAM_FILE.traj_file_restart, folder, path_to_inputfile, check = False)
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 # Subroutine to submit some dynamics
