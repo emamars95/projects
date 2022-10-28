@@ -182,8 +182,8 @@ def ROUTINE_DYNAMICS(allname, summary_file, traj_file, folder, path_to_inputfile
     traj_file = open(traj_file, 'w')
     # For the folder present in PWD we enter sequentially in each of them
     for traj_name in allname:
-        traj_folder = f'{PWD}/{traj_name}/' 
-        result_folder = glob.glob(traj_folder + folder)
+        traj_folder = f'{PWD}/{traj_name}/{folder}' 
+        result_folder = glob.glob(f'{traj_folder}/RESULTS/')
         if result_folder:
             summary, data = CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder[0], path_to_inputfile, check)    
             summary_file.write(summary + '\n')    
@@ -198,12 +198,12 @@ def CHECK_DYNAMICS():
     print (hline)
     print ("*****             The dynamics will be checked              *****\n")
     print (hline) 
-    folder = 'RESULTS/'
+    folder = ''
     ROUTINE_DYNAMICS(allname, PARAM_FILE.summary_file, PARAM_FILE.traj_file, folder, path_to_inputfile = PWD, check = True)
     print (hline)
     print ("*****       The restarted dynamics will be checked         *****\n")
     print (hline) 
-    folder = 'UMP2*/RESULTS/'
+    folder = 'UMP2*'
     path_to_inputfile = '/ddn/home/fzzq22/CODE_AND_SCRIPT/TEMPLATE_RESTARTs/NX_UMP2'
     ROUTINE_DYNAMICS(allname, PARAM_FILE.summary_file_restart, PARAM_FILE.traj_file_restart, folder, path_to_inputfile, check = False)
 
