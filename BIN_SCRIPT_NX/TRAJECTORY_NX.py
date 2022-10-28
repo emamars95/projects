@@ -177,6 +177,7 @@ def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder, path_to_inputfile, c
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def ROUTINE_DYNAMICS(allname, summary_file, traj_file, folder, path_to_inputfile, check):
+    os.chdir(PWD)
     summary_file = open(summary_file, 'w')
     traj_file = open(traj_file, 'w')
     # For the folder present in PWD we enter sequentially in each of them
@@ -184,7 +185,6 @@ def ROUTINE_DYNAMICS(allname, summary_file, traj_file, folder, path_to_inputfile
         traj_folder = f'{PWD}/{traj_name}/' 
         result_folder = glob.glob(traj_folder + folder)
         if result_folder:
-            os.chdir(traj_folder)                 
             summary, data = CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder[0], path_to_inputfile, check)    
             summary_file.write(summary + '\n')    
             traj_file.write(data + '\n')   
