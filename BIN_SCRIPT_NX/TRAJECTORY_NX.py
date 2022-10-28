@@ -14,14 +14,6 @@ PWD   = os.getcwd()
 hline = "*****************************************************************\n" 
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
-def CHECK_RESTARTED_DYNAMICS_HPP(restart_folder, summary):
-    method, time_restart = os.path.basename(os.path.normpath(restart_folder)).split("_")
-    d1_file  = "/d1_" + str(time_restart) + "fs.tmp"
-    d1_time_restart = GET_DATA(restart_folder + d1_file, 4)  # Extract the d1 value at the restart time
-    summary += "\t RESTARTED AT : %8.2f fs with d1 : %s" %(time_restart, d1_time_restart)
-    return summary
-
-#-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def CHECK_REACTIVITY_HPP(result_folder, summary, data):
     coordinate_file = result_folder + '/' + PARAM_FILE.coordinate_file
     O_H_INTER_DISTANCE = GET_DATA(coordinate_file, 3)       # Collect O--H distance
@@ -102,7 +94,6 @@ def CHECK_REACTIVITY(result_folder, time_traj, summary, data, dictionary):
         if   which_molecule == "HPP":
                 summary, data = CHECK_REACTIVITY_HPP(result_folder, summary, data)
                 restart_folder = glob.glob(result_folder + "../XMS-RESTART-12-9*")[0]      # Name in which the trajectory was restarted for HPP
-                summary = CHECK_RESTARTED_DYNAMICS_HPP(restart_folder, summary)
         elif which_molecule == "PYRONE":
                 summary, data = CHECK_REACTIVITY_NRMECI(result_folder, summary, data)
         elif which_molecule == "FORMALDEHYDE":
