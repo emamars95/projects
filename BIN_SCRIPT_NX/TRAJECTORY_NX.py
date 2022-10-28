@@ -84,12 +84,17 @@ def CHECK_REACTIVITY(result_folder, time_traj, summary, data):
         return summary, data
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
-def COPY_FILE(traj_name, result_folder, file_to_copy, time_traj, path_to_inputfile):
-    os.system(f"cp {path_to_inputfile}/{file_to_copy} {result_folder}")                      # Copy INPUT file for PLOT_TRAJ.py
-    os.system(f"sed -i 's/traj1/{traj_name}/' {result_folder}/{file_to_copy}")               # We update the INPUT files with
-    if "zoom" in file_to_copy:                                    # If it is the zoom INPUT we also modify the maxxrange and
-        os.system(f"sed -i '3s/0/{str(time_traj- 100)}/' {result_folder}/{file_to_copy}")    # We update the INPUT files with minxrange.
-        os.system(f"sed -i '4s/0/{str(time_traj)}/'      {result_folder}/{file_to_copy}")    # We update the INPUT files with maxxrange.
+def MODIFY_FILE(file_to_modify, time_traj):
+    os.system(f"sed -i '3s/0/{str(time_traj- 100)}/' {file_to_modify}")    # We update the INPUT files with minxrange.
+    os.system(f"sed -i '4s/0/{str(time_traj)}/'      {file_to_modify}")    # We update the INPUT files with maxxrange.
+
+def COPY_FILE(traj_name, result_folder, file_to_copy, path_to_inputfile):
+    newfile = open(f'{result_folder}/{file_to_copy}')
+    with open(f'{path_to_inputfile}/{file_to_copy}', 'r') as fp:
+        for line in fp:
+            line = line.replace('traj1', traj_name)
+            newfile.write(line)
+    newfile.close()
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def GENERATE_D1_FILE(result_folder):
@@ -108,10 +113,11 @@ def GENERATE_D1_FILE(result_folder):
 def PLOT_TRAJ_FINISHED(traj_name, result_folder, time_traj, path_to_inputfile):
     print(f'{traj_name}\t is just finished. It will be fully analyzed automatically.\n')
     os.chdir(result_folder)
-    COPY_FILE(traj_name, result_folder, PARAM_FILE.input_for_traj, time_traj, path_to_inputfile)        # We modify the two file changing name of the trajectories and the time
+    COPY_FILE(traj_name, result_folder, PARAM_FILE.input_for_traj, path_to_inputfile)        # We modify the two file changing name of the trajectories and the time
     os.system(f"{PARAM_FILE.plot_traj_script} {PARAM_FILE.input_for_traj}")                             # RUN our script to generate trajectory plots.
     if time_traj > 100:
-        COPY_FILE(traj_name, result_folder, PARAM_FILE.input_for_zoom, time_traj, path_to_inputfile)
+        COPY_FILE(traj_name, result_folder, PARAM_FILE.input_for_zoom, path_to_inputfile)
+        MODIFY_FILE(PARAM_FILE.input_for_zoom, time_traj)
         os.system(f"{PARAM_FILE.plot_traj_script} {PARAM_FILE.input_for_zoom} &>/dev/null")             # RUN our script to generate the trajectory of the last part of the dynamics.    
     os.system(f'touch {result_folder}/{PARAM_FILE.dont_analyze_file}')                                  # We write the file to not analyze the folder again   
     GENERATE_D1_FILE(result_folder)
