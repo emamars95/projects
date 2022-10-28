@@ -54,7 +54,7 @@ def TAIL_COORDINATES_FILE(result_folder, line):
     os.system(f"head -{line} {coord_file} > {coord_file_to_use}")
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
-def CHECK_REACTIVITY(result_folder, time_traj, summary, data, dictionary):
+def CHECK_REACTIVITY(result_folder, time_traj, summary, data):
         # Here we have to check at which molecule we are dealing with. Depending on the molecule the geometrical coordinates can be     #
         # different and therefore, we have to adopt different procedure.   
         dictionary = READING_PARAMETER_FILE(f"{result_folder}/{PARAM_FILE.input_for_traj}")                                                             #
