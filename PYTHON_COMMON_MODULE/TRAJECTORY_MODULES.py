@@ -52,7 +52,7 @@ def PRINT_WARNING(warning, e_gap, time):
 def PRINT_BREAK(e_gap, time, break_reason):
 	print (f"{PARAM_FILE.bcolors.FAIL}%5.2f eV discontinuity. Dynamics stoped at: %5.2f fs due %s {PARAM_FILE.bcolors.ENDC}" %(e_gap, time, break_reason))
 	with open(PARAM_FILE.error_dyn, 'w') as fp:
-		fp.write(f'{time}\t{e_gap}')
+		fp.write(f'{time} fs\t{e_gap:5.2f} eV')
 	return
 
 def CHECK_BREAK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY, warning, time, break_reason):
