@@ -56,7 +56,7 @@ def MAKE_COORDINATES_FILE(result_folder, time):
     with open(coord_file, 'r') as fp:
         for line in fp:
             fpnew.write(line)
-            if time in line.split()[0]:                 # The time is the first column of the file
+            if time == float(line.split()[0]):                 # The time is the first column of the file
                 break 
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -159,13 +159,13 @@ def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder, path_to_inputfile):
             summary += f"FINISHED AT {float(time_traj):6.1f} fs"                        # The plots will be not generated again
             if isfile(result_folder + '/' + PARAM_FILE.error_dyn):                      # If the error file (due energy discontinuity) is present in the folder
                 with open(f'{result_folder}/{PARAM_FILE.error_dyn}', 'r') as fp:
-                    time_validity = fp.readline().split()[0]                                    # Time is the first column of the file
+                    time_validity = float(fp.readline().split()[0])                                    # Time is the first column of the file
                 MAKE_COORDINATES_FILE(result_folder, time_validity) 
                 summary += f"\t ENERGY DISCONTINUITY at {time_validity}"
                 #data += "ENERGY_DISCONTINUITY" 
             else:
-                time_validity = 100000
-            summary, data = CHECK_REACTIVITY(result_folder, time_traj, summary, data, float(time_validity))
+                time_validity = 100000.00
+            summary, data = CHECK_REACTIVITY(result_folder, time_traj, summary, data, time_validity)
     else:
         summary  += "   RUNNING   \t%8.2f fs"                %(float(time_traj))
         data     += "RUNNING"    
