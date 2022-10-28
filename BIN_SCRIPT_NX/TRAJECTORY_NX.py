@@ -9,6 +9,7 @@ from NX_MODULES             import GET_EXCITATION_ENERGY, SUBMIT_TRAJECTORIES, L
 from TOOLS                  import sorted_nicely, GET_DATA
 from TRAJECTORY_MODULES     import GET_MOLECULE_LABEL, READING_PARAMETER_FILE
 import PARAM_FILE
+from BH3NH3 import CHECK_REACTIVITY_BH3NH3
 
 PWD   = os.getcwd()
 hline = "*****************************************************************\n" 
@@ -47,38 +48,6 @@ def CHECK_REACTIVITY_NRMECI(result_folder, summary, data):
     return summary, data
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
-def CHECK_REACTIVITY_BH3NH3(coordinate_file, summary, data):
-    check = False
-    B_N_BOND             = GET_DATA(coordinate_file, 1)       # Collect B-N bond distance
-    if float(B_N_BOND) > 2.0:                                               
-        summary += "\t> B-N DISS < (%3.3f)" %(B_N_BOND)
-        data += "BNDISS"
-        check = True
-    if not "BNDISS" in data: 
-        summary  += "\t\t\t"
-    # We collect all 3 B-H and N-H bonds in two arrays
-    LONGER_N_H_BOND        = 0;
-    for index in range(2,5):
-        N_H_BOND    = float(GET_DATA(coordinate_file, index))
-        if N_H_BOND > LONGER_N_H_BOND: LONGER_N_H_BOND = N_H_BOND
-        if N_H_BOND > 1.45:                            # N-H bond for diss
-            summary  += "\t> N-H DISS < (%3.3f)" %(N_H_BOND)  
-            data     += "NHDISS"
-            check = True
-    if not "NHDISS" in data:    
-        summary    += "\t\t\t"
-    for index in range(2,5):
-        B_H_BOND        = float(GET_DATA(coordinate_file, index + 3))
-        if B_H_BOND > 1.60:                            # B-H bond for diss
-            summary  += "\t> B-H DISS < (%3.3f)" %(B_H_BOND)
-            data     += "BHDISS"
-            check = True
-    if not check:
-        summary += f"\tUNDERTERMINED"
-        data += 'NOTDETER'
-    return summary, data
-
-#-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def TAIL_COORDINATES_FILE(result_folder, line):
     coord_file = result_folder + "/" + PARAM_FILE.coordinate_file
     coord_file_to_use = result_folder + "/" + PARAM_FILE.coordinate_file_to_use
@@ -87,7 +56,8 @@ def TAIL_COORDINATES_FILE(result_folder, line):
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def CHECK_REACTIVITY(result_folder, time_traj, summary, data, dictionary):
         # Here we have to check at which molecule we are dealing with. Depending on the molecule the geometrical coordinates can be     #
-        # different and therefore, we have to adopt different procedure.                                                                #
+        # different and therefore, we have to adopt different procedure.   
+        dictionary = READING_PARAMETER_FILE(f"{result_folder}/{PARAM_FILE.input_for_traj}")                                                             #
         template_geo = dictionary.get('template_geo')
         which_molecule, molecule_class = GET_MOLECULE_LABEL(template_geo)
         # Now in which_molecule we have the label of the molecule we are dealing with. 
@@ -121,29 +91,29 @@ def COPY_FILE(traj_name, result_folder, file_to_copy, time_traj, path_to_inputfi
         os.system(f"sed -i '4s/0/{str(time_traj)}/'      {result_folder}/{file_to_copy}")    # We update the INPUT files with maxxrange.
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
-def GENERATE_D1_FILE(file, dictionary):
+def GENERATE_D1_FILE(result_folder):
+    file_moldyn = f'{result_folder}/../moldyn.log'
+    dictionary = READING_PARAMETER_FILE(f"{result_folder}/{PARAM_FILE.input_for_traj}")
     d1file = open(PARAM_FILE.d1_file, 'w')
     i = 0; timestep = dictionary.get('time_step')
-    with open(file, 'r') as moldyn:
+    with open(file_moldyn, 'r') as moldyn:
         for line in moldyn:
             if 'D1 diagnostic for MP2:' in line:
                 time = timestep * i
-                d1file.write(f'{time:5.3f}\t{float(line.split()[4]):6.4f}')
+                d1file.write(f'{time:5.3f}\t{float(line.split()[4]):6.4f}')                 # 4 is the location where to find the D1 value along the dynamics
                 i += 1
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def PLOT_TRAJ_FINISHED(traj_name, result_folder, time_traj, path_to_inputfile):
     print(f'{traj_name}\t is just finished. It will be fully analyzed automatically.\n')
-    COPY_FILE(traj_name, result_folder, PARAM_FILE.input_for_traj, time_traj, path_to_inputfile)       # We modify the two file changing name of the trajectories and the time
-    os.system(f"{PARAM_FILE.plot_traj_script} {PARAM_FILE.input_for_traj}")                             # RUN our script to generate trajectory plots.
+    COPY_FILE(traj_name, result_folder, PARAM_FILE.input_for_traj, time_traj, path_to_inputfile)        # We modify the two file changing name of the trajectories and the time
+    os.system(f"bash {PARAM_FILE.plot_traj_script} {PARAM_FILE.input_for_traj}")                        # RUN our script to generate trajectory plots.
     if time_traj > 100:
         COPY_FILE(traj_name, result_folder, PARAM_FILE.input_for_zoom, time_traj, path_to_inputfile)
-        os.system(f"{PARAM_FILE.plot_traj_script} {PARAM_FILE.input_for_zoom} &>/dev/null")             # RUN our script to generate the trajectory of the last part of the dynamics.
-    os.system(f'touch {result_folder}/{PARAM_FILE.dont_analyze_file}')                                  # We write the file to not analyze the folder again
-    dictionary = READING_PARAMETER_FILE(f"{result_folder}/{PARAM_FILE.input_for_traj}")
-    GENERATE_D1_FILE(f'{result_folder}/../moldyn.log', dictionary)
+        os.system(f"bash {PARAM_FILE.plot_traj_script} {PARAM_FILE.input_for_zoom} &>/dev/null")        # RUN our script to generate the trajectory of the last part of the dynamics.    
+    os.system(f'touch {result_folder}/{PARAM_FILE.dont_analyze_file}')                                  # We write the file to not analyze the folder again   
+    GENERATE_D1_FILE(result_folder)
     os.chdir(PWD)
-    return dictionary
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder, path_to_inputfile):
@@ -165,19 +135,20 @@ def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder, path_to_inputfile):
         stop_signal    = subprocess.check_output('grep "moldyn.pl: End of dynamics" %s/moldyn.log ' % (traj_folder), shell = True).decode('ascii')
     except:    pass
 
-    if error_signal:
+    if error_signal:                                        # DYNAMICS NOT FINISHED (ERROR!)
         summary  += "*  ::ERROR::  *\t"
         data     += "ERROR"
-    elif stop_signal:                                    # If the dynamics is just finished!
-        dictionary = PLOT_TRAJ_FINISHED(traj_name, result_folder, time_traj, path_to_inputfile)
-        #summary += f"* JUST FINISHED *\t{float(time_traj):8.2f} fs"      
-        #os.system('grep "d1 diagnostic for MP2:" ' + traj_folder + '/moldyn.log | awk \'{printf "%9.2f\\t%s\\n", counter/2, $5; counter++}\' > d1_values') 
-        summary += f"FINISHED AT {float(time_traj):6.1f} fs"                        # The plots will be not generated again
-        if isfile(result_folder + '/' + PARAM_FILE.error_dyn):                      # If the error file (due energy discontinuity) is present in the folder
-            summary += "\t ENERGY DISCONTINUITY"    
-            data += "ENERGY_DISCONTINUITY"
-        else: 
-            summary, data = CHECK_REACTIVITY(result_folder, time_traj, summary, data, dictionary)
+    elif stop_signal:                                       # DYNAMICS IS finished NORMALLY!
+        if not isfile ({result_folder}/{PARAM_FILE.dont_analyze_file}):                 # MAKE PLOTS if the file PARAM_FILE.dont_analyze_file is not present
+            PLOT_TRAJ_FINISHED(traj_name, result_folder, time_traj, path_to_inputfile)
+            summary += f"* JUST FINISHED *\t{float(time_traj):8.2f} fs"      
+        else:    
+            summary += f"FINISHED AT {float(time_traj):6.1f} fs"                        # The plots will be not generated again
+            if isfile(result_folder + '/' + PARAM_FILE.error_dyn):                      # If the error file (due energy discontinuity) is present in the folder
+                summary += "\t ENERGY DISCONTINUITY"    
+                data += "ENERGY_DISCONTINUITY"
+            else: 
+                summary, data = CHECK_REACTIVITY(result_folder, time_traj, summary, data)
     else:
         summary  += "   RUNNING   \t%8.2f fs"                %(float(time_traj))
         data     += "RUNNING"    
