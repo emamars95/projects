@@ -197,9 +197,10 @@ def ROUTINE_DYNAMICS(allname, summary_file, traj_file, folder, path_to_inputfile
             summary, data = CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder[0], path_to_inputfile)    
             summary_file.write(summary + '\n')    
             traj_file.write(data + '\n')   
+            sys.exit()
     traj_file.close()      
     summary_file.close()
-    sys.exit()
+   
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
 # Subroutine to check the dynamics outcomes
