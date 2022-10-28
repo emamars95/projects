@@ -7,6 +7,7 @@ from json import loads
 
 from TOOLS import GET_DATA
 import PARAM_FILE
+from BH3NH3 import BH3NH3
 
 #----------------------------------------------------------------------------------------------------------------------------#
 def COUNTING_STATES(state_list):
@@ -128,7 +129,7 @@ def GET_MOLECULE_LABEL(template_geo):
 		label = "ACROLEIN"
 	elif "BH3NH3" 	in template_geo:
 		label = "BH3NH3"
-		class_molecule = PARAM_FILE.BH3NH3 
+		class_molecule = BH3NH3
 	elif "Pyridine" in template_geo:
 		label = "Pyridine"
 	elif "Nucleic_Acid" in template_geo:

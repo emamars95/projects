@@ -46,18 +46,3 @@ viridis = ['#440154', '#472c7a' ,'#3b518b', '#2c718e', '#21908d', '#27ad81', '#5
 shadeofblue     = ["#084594","#2171B5","#9ECAE1","#C6DBEF"]
 shadeofgreen    = ["#005A32","#238B45","#A1D99B","#C7E9C0"]
 shadeofgrey     = ["#808080","#A9A9A9","#C0C0C0","#DCDCDC", "#F5F5F5"]
-
-class BH3NH3:
-    # Name of the molecule
-    molecule	= "BH3NH3"
-    # Reactivity of the molecule
-    reactivity	= ["BHDISSBHDISS"	, "NHDISSBHDISS"	, "BHDISS"        	, "NHDISS"  	, "BNDISS"	]
-    # Type of distinct (expected) reaction channel. Here BHdiss is expected to give the same result as NHdissBHdiss
-    duplicate	= [1    		, 1			, 0		        , 1		, 1		]	
-    # Label assigned to each reaction channel 
-    labels	= ["2 x B-H diss"	, "B-H + N-H diss"	, ""			, "N-H diss"	, "B-N diss"	]
-    # Number or atoms
-    natoms	= 8
-    # Restart Folder Template
-    restart_template = "/ddn/home/fzzq22/CODE_AND_SCRIPT/TEMPLATE_RESTARTs/NX_UMP2"
-	
