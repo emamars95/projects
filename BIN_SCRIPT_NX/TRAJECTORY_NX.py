@@ -167,7 +167,6 @@ def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder, path_to_inputfile, c
                     time_validity = float(fp.readline().split()[0])                                    # Time is the first column of the file
                 MAKE_COORDINATES_FILE(result_folder, time_validity) 
                 summary += f"\tENERGY DISC. at {time_validity} fs"
-                #data += "ENERGY_DISCONTINUITY" 
             else:
                 time_validity = 100000.00
             summary, data = CHECK_REACTIVITY(result_folder, time_traj, summary, data, time_validity, check)
