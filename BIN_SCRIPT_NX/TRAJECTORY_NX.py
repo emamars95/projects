@@ -159,7 +159,7 @@ def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder, path_to_inputfile):
             summary += f"FINISHED AT {float(time_traj):6.1f} fs"                        # The plots will be not generated again
             if isfile(result_folder + '/' + PARAM_FILE.error_dyn):                      # If the error file (due energy discontinuity) is present in the folder
                 summary += "\t ENERGY DISCONTINUITY"
-                with open(f'{result_folder}/{PARAM_FILE.error_signal}', 'r') as fp:
+                with open(f'{result_folder}/{PARAM_FILE.error_dyn}', 'r') as fp:
                     time_validity = fp.readline()[0]                                             # Time is the first column of the file
                 MAKE_COORDINATES_FILE(result_folder, time_validity) 
                 data += "ENERGY_DISCONTINUITY" 
