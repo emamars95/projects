@@ -1,12 +1,12 @@
 {"method" 	: "NX",
 "states" 	: "1 0 0",
 "rangexmin"	: 0,
-"rangexmax" 	: 0,
-"rangeymin" 	: -6,
+"rangexmax" : 0,
+"rangeymin" : -6,
 "rangeymax"	: 2,
-"rangey2min"	: 0,
-"rangey2max"	: 4,
+"rangey2min": 0.75,
+"rangey2max": 4,
 "output"	: "zoom_dyn_ump2_traj1.png",
-"coordinates"	: "ABCDEF",
+"coordinates": "ABCDEF",
 "time_step"	: 0.25,
-"template_geo"	: "/ddn/home/fzzq22/CODE_AND_SCRIPT/BIN_GEO_INP/Geo_BH3NH3.inp"}
+"template_geo": "/ddn/home/fzzq22/CODE_AND_SCRIPT/BIN_GEO_INP/Geo_BH3NH3.inp"}
