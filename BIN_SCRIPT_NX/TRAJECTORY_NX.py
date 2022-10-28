@@ -166,7 +166,7 @@ def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder, path_to_inputfile, c
                 with open(f'{result_folder}/{PARAM_FILE.error_dyn}', 'r') as fp:
                     time_validity = float(fp.readline().split()[0])                                    # Time is the first column of the file
                 MAKE_COORDINATES_FILE(result_folder, time_validity) 
-                summary += f"\t ENERGY DISC. at {time_validity} fs\t"
+                summary += f"\tENERGY DISC. at {time_validity} fs\t"
                 #data += "ENERGY_DISCONTINUITY" 
             else:
                 time_validity = 100000.00
