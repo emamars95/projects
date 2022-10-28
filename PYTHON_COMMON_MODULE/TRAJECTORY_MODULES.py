@@ -2,7 +2,6 @@
 
 import os
 import subprocess
-import sys
 from json import loads
 
 from TOOLS import GET_DATA
@@ -30,46 +29,47 @@ def READING_PARAMETER_FILE(parameter_file_name):
 #----------------------------------------------------------------------------------------------------------------------------#
 def TOT_ENERGY_CHECK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY):
 	Thresh_EGAP     = 0.05 							# eV
-	E_GAP	= abs(tot_energy_step_2 - tot_energy_step_1) 			# Energies are given in eV
+	e_gap	= abs(tot_energy_step_2 - tot_energy_step_1) 			# Energies are given in eV
 # FIRST CONDITION to break:   GAP in total energy LARGER THAN 
-	if E_GAP > 0.2:
+	if e_gap > 0.2:
 		break_reason     = "GAP"						# We compare the enrgy between the current and previous step
 # SECOND CONDITION to break:  DRIFT LARGER THAN
 	elif abs(INIT_TOT_ENERGY - tot_energy_step_2) > 0.3:                  	# Check the drift comparing with the initial total energy
 		break_reason     = "DRIFT"
 # If there is a small gap with warn the user
-	elif E_GAP > Thresh_EGAP:
+	elif e_gap > Thresh_EGAP:
 		break_reason     = "WARNING"
 	else:
 		break_reason 	= False
-	return break_reason, E_GAP
+	return break_reason, e_gap
 
 #----------------------------------------------------------------------------------------------------------------------------#
-def PRINT_WARNING(warning, E_GAP, time):
+def PRINT_WARNING(warning, e_gap, time):
 	warning += 1
-	print(f"{PARAM_FILE.bcolors.WARNING}%5.2f eV discontinuity at time: %5.2f fs{PARAM_FILE.bcolors.ENDC}" %(E_GAP, time))
+	print(f"{PARAM_FILE.bcolors.WARNING}%5.2f eV discontinuity at time: %5.2f fs{PARAM_FILE.bcolors.ENDC}" %(e_gap, time))
 	return warning
 
-def PRINT_BREAK(E_GAP, TIME, break_reason):
-	print (f"{PARAM_FILE.bcolors.FAIL}%5.2f eV discontinuity. Dynamics stoped at: %5.2f fs due %s {PARAM_FILE.bcolors.ENDC}" %(E_GAP, TIME, break_reason))
-	os.system("touch %s" %(PARAM_FILE.error_dyn))
+def PRINT_BREAK(e_gap, time, break_reason):
+	print (f"{PARAM_FILE.bcolors.FAIL}%5.2f eV discontinuity. Dynamics stoped at: %5.2f fs due %s {PARAM_FILE.bcolors.ENDC}" %(e_gap, time, break_reason))
+	with open(PARAM_FILE.error_dyn, 'w') as fp:
+		fp.write(f'{time}\t{e_gap}')
 	return
 
-def CHECK_BREAK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY, warning, TIME, break_reason):
+def CHECK_BREAK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY, warning, time, break_reason):
 	if break_reason == "SWITCH":							tobreak = True;
 	else:
-		break_reason, E_GAP      = TOT_ENERGY_CHECK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY)
+		break_reason, e_gap      = TOT_ENERGY_CHECK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY)
 		if not break_reason:					# If there is no gap we update the i-1 record
 			tot_energy_step_1       = tot_energy_step_2; 			tobreak	= False
 		elif (break_reason == "WARNING"):
-			warning 	= PRINT_WARNING(warning, E_GAP, TIME)
+			warning 	= PRINT_WARNING(warning, e_gap, time)
 			if warning >= 5: 
-				PRINT_BREAK(E_GAP, TIME, break_reason);			tobreak = True
+				PRINT_BREAK(e_gap, time, break_reason);			tobreak = True
 			else: 
 				tot_energy_step_1 = tot_energy_step_2;			tobreak = False
 		else: 
-			PRINT_BREAK(E_GAP, TIME, break_reason); 				tobreak = True; 
-	return tot_energy_step_1, tot_energy_step_2, warning, TIME, break_reason, tobreak
+			PRINT_BREAK(e_gap, time, break_reason); 				tobreak = True; 
+	return tot_energy_step_1, tot_energy_step_2, warning, time, break_reason, tobreak
 
 #----------------------------------------------------------------------------------------------------------------------------#
 def TRAJECTORY_BREAK_SH(EnergyFile, nmstates, timestep):
@@ -82,12 +82,12 @@ def TRAJECTORY_BREAK_SH(EnergyFile, nmstates, timestep):
 				tot_energy_step_1	= float(lisline[6])		# Energy in eV.
 				INIT_TOT_ENERGY		= tot_energy_step_1		# We save the initial energy to check drifts
 			if (i > 5) and (lisline[0] != "#"):		# '#' occurs in out file when the traj HOPs. We want skip that line
-				TIME = float(lisline[1])
+				time = float(lisline[1])
 				tot_energy_step_2	= float(lisline[6])		# Energy in eV.
-				(tot_energy_step_1, tot_energy_step_2, warning, TIME, break_reason,
-					tobreak) = CHECK_BREAK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY, warning, TIME, break_reason)
+				(tot_energy_step_1, tot_energy_step_2, warning, time, break_reason,
+					tobreak) = CHECK_BREAK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY, warning, time, break_reason)
 				if tobreak: break
-	return TIME, break_reason
+	return time, break_reason
 
 #----------------------------------------------------------------------------------------------------------------------------#
 def TRAJECTORY_BREAK_NX(EnergyFile, nmstates, timestep):
@@ -95,7 +95,7 @@ def TRAJECTORY_BREAK_NX(EnergyFile, nmstates, timestep):
 	with open(EnergyFile,"r") as fp:
 		for i, lisline in enumerate(fp):
 			break_reason = False
-			lisline	= lisline.split(); TIME = float(lisline[0])
+			lisline	= lisline.split(); time = float(lisline[0])
 			if i == 0: 					# Line 0 is the first point of the dynamics t = 0 fs
 				# Here we multiply for the conversion factor to get the energies in eV
 				# nmstates+2 line with total energy, consider the array in python start from 0
@@ -106,14 +106,14 @@ def TRAJECTORY_BREAK_NX(EnergyFile, nmstates, timestep):
 				# The total energy for the actual line is saved in the variable
 				tot_energy_step_2 	= float(lisline[nmstates + 2]) * PARAM_FILE.ev_au_conv
 				# Here we check the energy discontinuities and if there are some drift with trajectories
-				break_reason, E_GAP 	= TOT_ENERGY_CHECK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY) 
+				break_reason, e_gap 	= TOT_ENERGY_CHECK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY) 
 # It is necessary for TDDFT and ADC(2) dynamics when we can have a swap of S0 and S1 excited state. Clearly the dynamics beyond is not valid anymore.
 # THIRD CONDITION: (S0 energy - S1 energy) > 0.0 ==> S1 and S0 cross 
 				if float(lisline[1]) - float(lisline[2]) > 0:   break_reason	= "SWITCH"; 	
-				(tot_energy_step_1, tot_energy_step_2, warning, TIME, break_reason,
-					 tobreak) = CHECK_BREAK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY, warning, TIME, break_reason)
+				(tot_energy_step_1, tot_energy_step_2, warning, time, break_reason,
+					 tobreak) = CHECK_BREAK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY, warning, time, break_reason)
 				if tobreak: break
-	return TIME, break_reason, s0_ene/PARAM_FILE.ev_au_conv
+	return time, break_reason, s0_ene/PARAM_FILE.ev_au_conv
 
 #----------------------------------------------------------------------------------------------------------------------------#
 def GET_MOLECULE_LABEL(template_geo):
@@ -169,7 +169,7 @@ def WRITE_HEAD_GP(outname, rangexmin, rangexmax, rangeymin, rangeymax, positionl
     gnuplot_head    += 'set output "%s"\n\n' 						% (outname)
     gnuplot_head    += 'set dashtype 11 (10,9)\nset dashtype 12 (5,8)\n\n'
     gnuplot_head    += 'set lmargin at screen 0.11\nset rmargin at screen 0.86\n'
-    gnuplot_head    += 'set xrange[%i:%i]\nset xlabel "Time (fs)"\n' 			% (rangexmin, rangexmax)
+    gnuplot_head    += 'set xrange[%i:%i]\nset xlabel "time (fs)"\n' 			% (rangexmin, rangexmax)
     gnuplot_head    += 'set title offset 0,-0.8\n'
     gnuplot_head    += 'set multiplot\n  set ytics nomirror\n  set key at %s\n  set ylabel "Relative Energy(eV)"\n  set yrange[%s:%s]\n'  %(positionlabel1, rangeymin, rangeymax)
 
@@ -254,7 +254,6 @@ def WRITE_GEOMETRICAL_CORDINATES_Nucleic_Acid_GP(input_coord, gnuplot_time_label
 
     return gnuplot_coord, y2label, index
 
-
 #----------------------------------------------------------------------------------------------------------------------------#
 def WRITE_NX_STATE_GP(nstates, state_list, s0_ene, t_label, datafile):
 	singlets = 0; triplets = 1;
@@ -323,7 +322,7 @@ def WRITE_SH_STATE_GP_RESTARTED(state_list, time_restart, lisline):
 	s1_ene = float(subprocess.check_output(['tail', '-' + str(int( (end_dyn - time_restart) * 2 + 1 )), datafile]).split()[2])
 	scaling = -(float(lisline[5])/PARAM_FILE.ev_au_conv) + s1_ene                              # the scaling for the parent dynamics will be so that the S1 energies at 
 	# time_restart will be exactly the same for both calculation (we will have the line conciding at the same point).
-	# print (TIME_END_OF_DYN, s1_ene, scaling, lisline[5])					# !!5 is the index for energy S1!!
+	# print (time_END_OF_DYN, s1_ene, scaling, lisline[5])					# !!5 is the index for energy S1!!
 	for i in range(state_list[0]):	# Here the number the singlet but could be a sub set of the number of electronic states in the NX dynamics
 		gnuplot_state += f'  "{datafile}" u 1:((${i+2} - {scaling:9.5f})*{PARAM_FILE.ev_au_conv}) notitle lw {lw_2:3.1f} lt 1 lc rgb "{PARAM_FILE.shadeofgrey[singlets]}" w l, \\\n'
 		singlets   += 1
