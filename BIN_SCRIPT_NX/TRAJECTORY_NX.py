@@ -80,6 +80,7 @@ def CHECK_REACTIVITY(result_folder, time_traj, summary, data, time_validity):
         elif which_molecule == "BH3NH3":
                 from BH3NH3 import CHECK_REACTIVITY_BH3NH3
                 time_d1, d1 = GET_TIME_BASED_ON_D1(result_folder, 0, time_traj)                     # get time where dynamics is still valid based on d1
+                print(time_d1, time_validity)
                 if not isfile(f'{result_folder}/{PARAM_FILE.coordinate_file_to_use}') or (time_d1 < time_validity):
                     MAKE_COORDINATES_FILE(result_folder, time_d1)                         
                     summary += f'\tD1 {d1:5.4f} at TIME {time_d1:5.1f} fs' 
