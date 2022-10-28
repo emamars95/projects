@@ -163,6 +163,8 @@ def CHECK_TRAJECOTRY(traj_name, traj_folder, result_folder, path_to_inputfile):
                 MAKE_COORDINATES_FILE(result_folder, time_validity) 
                 summary += f"\t ENERGY DISCONTINUITY at {time_validity}"
                 #data += "ENERGY_DISCONTINUITY" 
+            else:
+                time_validity = 100000
             summary, data = CHECK_REACTIVITY(result_folder, time_traj, summary, data, float(time_validity))
     else:
         summary  += "   RUNNING   \t%8.2f fs"                %(float(time_traj))
