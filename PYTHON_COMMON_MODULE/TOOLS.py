@@ -1,5 +1,3 @@
-#!/usr/local/Cluster-Apps/python/3.6.8/bin/python3.6
-
 import re
 import subprocess
 
