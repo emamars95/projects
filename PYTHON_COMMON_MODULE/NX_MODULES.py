@@ -2,7 +2,6 @@
 import os
 import sys
 import subprocess
-import random 
 import glob
 from os.path import isfile
 
@@ -53,45 +52,6 @@ def MAKE_GEOM_VELOC_NX(time, time_step, natoms):
 	file_veloc.close()
 	# Convert NX format in xyz format
 	os.system(". load-NX.sh && $NX/nx2xyz > geom.xyz")
-	return
-
-# Chose random trajectories from a bunch s
-def LABEL_TRAJ(PWD, wanted_traj, total_traj):
-	ALLNAME = sorted_nicely(glob.glob("TRAJ*"))
-	prob	= wanted_traj/total_traj; i = 0;
-	print("The probability to select one trajectory is:     %10.2f and the total number of trajectories are: %10.2f" %(prob, len(ALLNAME)) )
-	print("The expected number of trajectory to submit are: %10.2f" %(prob * len(ALLNAME)) )
-	os.system("touch %s/%s" %(PWD, PARAM_FILE.to_submit_file)) 		# Write the file
-	for TRAJ_NAME in ALLNAME:
-		rd	= random.random()			# Random number between 0 and 1
-		# The probability to be selected is the number of trajs we want devided the total number of trajectories we have
-		if (prob > rd):					# Select trajectory depending on the random number
-			traj_folder	=   "%s/%s/" 		%(PWD, TRAJ_NAME)
-			os.system("echo %s >  %s/%s"     	%(str(rd), traj_folder, PARAM_FILE.to_submit_file))	# Write a label file with the random number generated
-			os.system("echo %s >> %s/%s" 		%(TRAJ_NAME, PWD, PARAM_FILE.to_submit_file))		# Write a summary file with all selected trajectories
-			i = i + 1
-	print("The number of submitted trajectory are:          %i" %(i))
-	return
-
-def SUBMIT(TRAJ_NAME):
-	os.system("nohup $NX/moldyn.pl > moldyn.log &")
-	print ("%s submitted" %(TRAJ_NAME))
-
-# Submit the trajectory for NX dynamics
-def SUBMIT_TRAJECTORIES(PWD):
-	labeling	= False
-	if isfile(PWD + "/TO_SUBMIT"): labeling	= True	
-	FIRST_TRAJ      = int(input("Insert first traj to submit   "))		
-	LAST_TRAJ       = int(input("Insert last traj to submit    "))
-	print("INITIAL CONDITIONS from ", FIRST_TRAJ, " to ", LAST_TRAJ, " will be submitted")
-	for i in range(FIRST_TRAJ, LAST_TRAJ + 1):
-		TRAJ_NAME = "/TRAJ" + str(i)
-		os.chdir(PWD + TRAJ_NAME + "/")				# Eneter in the folder
-		if labeling:						# If we have previusly labeled the traj to sumbit
-			if (isfile("TO_SUBMIT")): 
-				SUBMIT(TRAJ_NAME)	# If the traj is labelled
-		else:				  
-			SUBMIT(TRAJ_NAME)     # All traj in the range
 	return
 
 # Get the excitation energy and the probability of one specific TRAJECTORY. Return a string with the values.  

@@ -1,0 +1,68 @@
+# ---------------------------------------------------------------------------------------------------------------------------- #
+# Functions for ranges, tics and labels
+def wranges(ranges, i, letter):
+	toadd   = 'set %srange[%4.2f : %4.2f]\n'                        	%(letter, ranges[i*2], ranges[i*2 + 1])
+	if i >= 2:
+		xyplane = 1.0; toadd += 'set xyplane at %4.2f'			%(xyplane)
+	return toadd
+def wtics(ranges, tics, i, letter):
+	return 'set %stics %i, %4.2f, %i\n'                     		%(letter, floor(ranges[i*2]), tics[i], ceil(ranges[i*2 + 1]))
+def wlabels(labels, offsets, i, letter):
+	return 'set %slabel "%s" offset %5.2f, %5.2f rotate parallel\n'       %(letter, labels[i], offsets[i*2], offsets[i*2 + 1])
+# ---------------------------------------------------------------------------------------------------------------------------- #
+
+class GNUPLOT_SCRIPT:
+# Defining class variables
+	encoding		= 'set encoding iso_8859_1'
+	border_width		= 4
+	plottype		= ''
+# Define class modules
+	def __init__(self, out_file, ranges, tics, labels, offsets, keys, margins, ptype):
+		self.out_file	= out_file
+		self.ranges, self.tics	= ranges, tics 
+		if   (self.ranges[4] == None or self.ranges[4] == 0) and (self.ranges[5] == None or self.ranges[4] == 0): 	GNUPLOT_SCRIPT.plottype	= "2D"
+		elif (self.ranges[4] != 0    or self.ranges[5] != 0): 								GNUPLOT_SCRIPT.plottype	= "3D"
+		else: warn("the Values associated with the Zrange should be None, 0 or something different from zero") 	
+		self.labels, self.offsets 		= labels, offsets
+		self.keys, self.margins			= keys, margins
+		self.ptype				= ptype
+		
+# Define modules related with the script header
+	def wterminal(self):
+		wide = 1600; height = 1000; size_font = 40; font = "Helvetica"
+		return 'set terminal pngcairo enhanced dashed font "%s, %i" size %i, %i' 	%(font, size_font, wide, height)
+	# output name
+	def woutput(self):	return 'set output "%s.png"	' 				%(self.out_file)
+	# border of the plot		
+	def wborder(self):	return 'set border lw %i	' 				%(GNUPLOT_SCRIPT.border_width)
+	# margins
+	def wmargins(self):
+		string = ''
+		for i, letter in enumerate(['t', 'l', 'b', 'r']): string += 'set %smargin at screen %5.3f\n' 	%(letter, self.margins[i])
+		return string
+	# line stiles that are required
+	def stylelines(self):
+		if self.ptype == "linespoints":	return 'set style line 1 lt 1 lw 8 pt 7 pi -1 ps 4.0'
+		else: return ''
+# Assemble the header of the script
+	def header(self): 	return self.wterminal() + '\n' + GNUPLOT_SCRIPT.encoding + '\n' + self.woutput() + '\n' + self.wborder() + '\n' + self.wmargins() + '\n' + self.stylelines()
+
+# Define modules related with data and script compositions
+	def wkeys(self):
+		spacing	= 0.7
+		if GNUPLOT_SCRIPT.plottype == "2D": return 'set key at %4.2f, %4.2f spacing %4.2f'		%(self.keys[0], self.keys[1], spacing)
+		if GNUPLOT_SCRIPT.plottype == "3D": return 'set key at %4.2f, %4.2f, %4.2f spacing %4.2f'	%(self.keys[0], self.keys[1], self.keys[2], spacing)
+# Assemble the data section of the script
+	def data(self):
+		string = ['', '', '']		
+		for i, letter in enumerate(["x" , "y", "z"]):
+			string[0] += wranges(self.ranges, i, letter)
+			string[1] += wtics(self.ranges, self.tics, i, letter)
+			string[2] += wlabels(self.labels, self.offsets, i, letter);
+			if GNUPLOT_SCRIPT.plottype == "2D" and letter == "y": break
+		return string[0] + '\n' + string[1] + string[2] + '\n' + self.wkeys()
+
+# Assemble all the script
+	def script(self):
+		return self.header() + '\n' + self.data()
+

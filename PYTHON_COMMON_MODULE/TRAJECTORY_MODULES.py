@@ -2,11 +2,11 @@
 
 import os
 import subprocess
-from json import loads
-
-from TOOLS import GET_DATA
+from json 			import loads
+from TOOLS 			import GET_DATA
+from BH3NH3 		import BH3NH3
+from Pyridine 		import Pyridine
 import PARAM_FILE
-from BH3NH3 import BH3NH3
 
 #----------------------------------------------------------------------------------------------------------------------------#
 def COUNTING_STATES(state_list):
@@ -25,7 +25,12 @@ def READING_PARAMETER_FILE(parameter_file_name):
 		data = parameter_file.read()
 	dictionary = loads(data)
 	return dictionary
-			
+
+#----------------------------------------------------------------------------------------------------------------------------#
+def WHICH_MOLECULE(dictionary):
+	template_geo = dictionary.get('template_geo')
+	return GET_MOLECULE_LABEL(template_geo)	
+
 #----------------------------------------------------------------------------------------------------------------------------#
 def TOT_ENERGY_CHECK(tot_energy_step_1, tot_energy_step_2, INIT_TOT_ENERGY):
 	Thresh_EGAP     = 0.05 							# eV
@@ -132,6 +137,7 @@ def GET_MOLECULE_LABEL(template_geo):
 		class_molecule = BH3NH3
 	elif "Pyridine" in template_geo:
 		label = "Pyridine"
+		class_molecule = Pyridine
 	elif "Nucleic_Acid" in template_geo:
 		label = "Nucleic_Acid"
 	else:
