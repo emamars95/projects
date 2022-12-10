@@ -4,8 +4,7 @@ import os
 import subprocess
 from json 			import loads
 from TOOLS 			import GET_DATA
-from BH3NH3 		import BH3NH3
-from Pyridine 		import Pyridine
+from molecules  	import *  
 import PARAM_FILE
 
 #----------------------------------------------------------------------------------------------------------------------------#
@@ -134,10 +133,10 @@ def GET_MOLECULE_LABEL(template_geo):
 		label = "ACROLEIN"
 	elif "BH3NH3" 	in template_geo:
 		label = "BH3NH3"
-		class_molecule = BH3NH3
+		class_molecule = BH3NH3.BH3NH3
 	elif "Pyridine" in template_geo:
 		label = "Pyridine"
-		class_molecule = Pyridine
+		class_molecule = Pyridine.Pyridine
 	elif "Nucleic_Acid" in template_geo:
 		label = "Nucleic_Acid"
 	else:

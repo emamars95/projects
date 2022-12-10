@@ -64,7 +64,6 @@ def CHECK_TRAJECOTRY(makedir_file: str, traj_name: str, traj_folder: str, result
     summary, data = INITIALIZATION(makedir_file, traj_name)
     # Collect TRAJ time (record 0) from the en.dat file
     time_traj = float(GET_DATA(result_folder + "/en.dat", 0)) 
-
     error_signal, stop_signal = False, False
     # Read from moldyn.log if the dynamics is finished without errors
     try:     
@@ -74,7 +73,6 @@ def CHECK_TRAJECOTRY(makedir_file: str, traj_name: str, traj_folder: str, result
     try:    
         stop_signal = check_output('grep "moldyn.pl: End of dynamics" %s/moldyn.log ' % (traj_folder), shell = True).decode('ascii')
     except:    pass
-
     # DYNAMICS NOT FINISHED (ERROR!)
     if error_signal:                                        
         summary, data = ERROR_IN_DYNAMICS(summary, data)
@@ -84,7 +82,6 @@ def CHECK_TRAJECOTRY(makedir_file: str, traj_name: str, traj_folder: str, result
     # DYNAMICS IS RUNNING
     else:
         summary, data = DYNAMICS_IS_RUNNING(summary, data, time_traj)
-  
     return summary, data
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
