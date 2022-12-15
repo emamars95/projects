@@ -1,7 +1,6 @@
 #!/usr/local/Cluster-Apps/python/3.6.8/bin/python3.6
 
 import sys
-import os
 import subprocess
 
 AtoB		= 1.8897259886

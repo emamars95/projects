@@ -3,9 +3,9 @@ import os
 import sys
 import subprocess
 import glob
-from os.path import isfile
+from os.path 		import isfile
 
-from TOOLS      import sorted_nicely
+from TOOLS      	import sorted_nicely
 import PARAM_FILE
 
 # This check the file from the last line to the first line 
