@@ -58,7 +58,6 @@ def CHECK_REACTIVITY(result_folder: str, time_traj: str, summary: str, data: str
         dictionary = READING_PARAMETER_FILE(f"{result_folder}/{PARAM_FILE.input_for_traj}")                                                             
         template_geo = dictionary.get('template_geo')
         which_molecule, molecule_class = GET_MOLECULE_LABEL(template_geo)
-        coordinate_file = f'{result_folder}/{PARAM_FILE.coordinate_file}'
         # Now in which_molecule we have the label of the molecule we are dealing with. 
         if   which_molecule == "HPP":
             summary, data = CHECK_REACTIVITY_HPP(result_folder, summary, data)
@@ -72,7 +71,7 @@ def CHECK_REACTIVITY(result_folder: str, time_traj: str, summary: str, data: str
             summary, data = CHECK_REACTIVITY_NRMECI(result_folder, summary, data)
         else:
             try:
-                summary, data = molecule_class.CHECK_REACTIVITY(coordinate_file, summary, data, time_traj, time_validity, check)
+                summary, data = molecule_class.CHECK_REACTIVITY(result_folder, summary, data, time_traj, time_validity, check)
             except:
-                ValueError (f'{molecule_class} Failed. Did you have correctly implemented the new module?')
+                raise ValueError(f'{molecule_class} Failed. Did you have correctly implemented the new module?')
         return summary, data

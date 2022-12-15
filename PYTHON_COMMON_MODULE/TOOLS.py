@@ -1,5 +1,5 @@
 import re
-import subprocess
+from subprocess				import check_output
 
 # Sort the data alphanumerically
 def sorted_nicely(array):
@@ -10,14 +10,14 @@ def sorted_nicely(array):
 # Get the data from the last line of file = FILE and column = RECORD  
 def GET_DATA(FILE, RECORD):
 	try:
-		data    = float(subprocess.check_output(['tail', '-1', FILE]).split()[RECORD])
+		data    = float(check_output(['tail', '-1', FILE]).split()[RECORD])
 	except:
 		data    = "None"
 	return data
 
 def GET_DATA_FROM_STRING(FILE, STRING, RECORD):
 	try:
-		data    = float(subprocess.check_output('grep "%s" %s | tail -1' % (STRING, FILE), shell = True).decode('ascii').split()[RECORD])
+		data    = float(check_output('grep "%s" %s | tail -1' % (STRING, FILE), shell = True).decode('ascii').split()[RECORD])
 	except:
 		data	= "None"
 	return data

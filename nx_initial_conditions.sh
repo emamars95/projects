@@ -1,3 +1,8 @@
+
+#!/bin/bahs
+# This script create a set of intial conditions for the spectra calculation with NX. 
+# 1) It spit the total number of geometries in n folder (n is read from command line)
+# 2) After it run in each folder the 
 #$NX/xyz2nx < *.xyz
 
 here=`pwd`

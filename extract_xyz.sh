@@ -14,7 +14,7 @@ read -e -p "Insert the index of the final geo to extract                        
 time_start=`bc <<< "scale=2; $index_start/2"`
 time_finish=`bc <<< "scale=2; $index_finish/2"`
 
-folder=GEO_PROFILE
+folder="GEO_PROFILE"
 
 mkdir -p $folder
 rm    -f $folder/*xyz

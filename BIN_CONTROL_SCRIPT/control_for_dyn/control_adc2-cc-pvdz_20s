@@ -3,7 +3,7 @@
 a coord
 *
 no
-b all def2-SVPD
+b all cc-pVDZ
 *
 eht
 
@@ -11,13 +11,17 @@ eht
 
 scf
 iter
-100
+200
+damp
+2.0
+0.05
+0.1
 
 cc
 freeze
 *
 cbas
-b all def2-SVPD
+b all cc-pVDZ
 *
 memory
 2000
@@ -25,7 +29,7 @@ ricc2
 adc(2)
 *
 exci
-irrep=a multiplicity=1 nexc=10
+irrep=a multiplicity=1 nexc=20
 spectrum states=all
 *
 *

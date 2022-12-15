@@ -1,5 +1,7 @@
 #!/bin/usr/env python3 
+
 from TOOLS import GET_DATA
+import PARAM_FILE 
 
 class Pyridine:
     # Name of the molecule
@@ -20,7 +22,7 @@ class Pyridine:
     restart_template = "/ddn/home/fzzq22/CODE_AND_SCRIPT/TEMPLATE_RESTARTs/PyBH3-NX_UMP2/"
 
     def CHECK_REACTIVITY(result_folder: str, summary: str, data: str, time_traj: str, time_validity: str, check: bool) -> tuple[str, str]:
-        coordinate_file_to_use = f'{result_folder}/{PARAM_FILE.coordinate_file}'
+        coordinate_file = f'{result_folder}/{PARAM_FILE.coordinate_file}'
         check = False
         B_N_bond = GET_DATA(coordinate_file, 1)             # Collect B-N bond distance
         # B-N dissociation
@@ -38,7 +40,23 @@ class Pyridine:
                 summary  += "\t> B-H DISS < (%3.3f)" %(B_H_bond)
                 data     += "BHDISS"
                 check = True
-        # Reaction is not determined
+        if not "BHDISS" in data:
+            summary  += "\t\t\t"
+        # N pyramidalization
+        Pyr_N = GET_DATA(coordinate_file, 9) 
+        if abs(float(Pyr_N)) > 7.5:                                               
+            summary += "\t> PYR N < (%3.3f)" %(Pyr_N)
+            data += "PYRN"
+            check = True  
+        if not "PYRN" in data:
+            summary  += "\t\t\t"  
+        # Ring puckering   
+        puckering_Q = GET_DATA(coordinate_file, 5)             
+        if float(puckering_Q) > 0.175:                                               
+            summary += "\t> Puckering < (%3.3f)" %(puckering_Q)
+            data += "Puckering"
+            check = True    
+        # Else
         if not check:
             summary += f"\tUNDERTERMINED"
             data += 'NOTDETER'

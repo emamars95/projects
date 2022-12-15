@@ -148,7 +148,7 @@ def GET_MOLECULE_LABEL(template_geo):
 def MAKE_GEOMETRICAL_COORDINATES(timestep, template_geo, label_molecule):
     os.system("cp -f dyn.xyz output.xyz")						# Python script read the file output.xyz
     programgeo = '/nobackup/zcxn55/SOFTWARE/SHARC-2.1-corr-edc/bin/geo.py'
-    cmd = "python2 $SHARC/%s -t %5.2f < %s > %s" %(programgeo, timestep, template_geo, PARAM_FILE.coordinate_file)
+    cmd = f"python2 {programgeo} -t {timestep:5.2f} < {template_geo} > {PARAM_FILE.coordinate_file}"
     os.system(cmd)								# The tmp coordinate file is created
     if label_molecule == "HPP" or label_molecule == "HPAC":
         label = "   time\t\tO-O\t\t\tO-H\t\t\tO--H\t\tC-C\t\t\tC=0\t\tC=O pyramid\t\tC-O\t\td 3 1 4 10\t\td 2 1 4 10\t\tC1--O11"
