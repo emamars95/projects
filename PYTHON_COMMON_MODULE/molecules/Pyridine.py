@@ -12,9 +12,14 @@ class Pyridine:
     #reactivity	= ["BNDISS", "BHDISS", "NHDISS", "BHDISSBHDISS", "NHDISSBHDISS", "NHDISSBHDISSBHDISS"]
     # Type of distinct (expected) reaction channel. Here BHdiss is expected to give the same result as NHdissBHdiss
     dic_reactivity = {
-        "BNDISS":       [0, "BH_3 + Py"], 
-        "BHDISS":       [1, "H_2 + BH_2-Py"],
-        "BHDISSBHDISS": [3, "H_2 + BH-Py"]
+        "BNDISS":               [0, "BH_3 + Py"], 
+        "BHDISS":               [1, "H + BH_2-Py"],
+        "BHDISSPYRN":           [1, "H + BH_2-Py"],
+        "BHDISSPuckering":      [1, "H + BH_2-Py"],
+        "BHDISSPYRNPuckering":  [1, "H + BH_2-Py"],
+        "PYRN":                 [2, "BH_3-Py"],
+        "Puckering":            [2, "BH_3-Py"],
+        "PYRNPuckering":        [2, "BH_3-Py"]        
     }
     # The ref_path must contain the files that will be used as the template for the dynamics
     folder_restart = "UMP2-RESTART"                       

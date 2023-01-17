@@ -46,6 +46,7 @@ generateIC() {
                     k=$((${k}+1))
                 fi
         done
+        echo -e "\n"
 }
 
 splitIC() {
@@ -68,6 +69,7 @@ splitIC() {
 $mcal
 EOF
         done
+        echo -e "\n"
 }
 
 runIC() {
@@ -83,6 +85,7 @@ runIC() {
                 cp final_output final_output.old
                 nohup $NX/initcond.pl > initcond.log &
         done
+        echo -e "\n"
 }
 
 mergeIC() {
@@ -97,18 +100,17 @@ mergeIC() {
         $NX/merge_initcond.pl <<EOF
 ${ncal}
 EOF
+        echo -e "\n"
 }
 
 totic=500
-split=5
+split=10
 msplit=$((${totic}/${split}))
 
 echo -e "Number of geometries are: ${totic}"
 echo -e "Number of geometries for each IC: ${msplit}"
 echo -e "\n"
-generateIC ${totic}
-echo -e "\n"
-splitIC ${split} ${msplit}
-echo -e "\n"
-runIC $split
-#mergeIC $split
+#generateIC ${totic}
+#splitIC ${split} ${msplit}
+#runIC $split
+mergeIC $split

@@ -113,13 +113,16 @@ class GlobalAnalysis():
 			del dictionary[key]
 		return dictionary
 
-	def QY(self, reactivity: dict, which_molecule_calss) -> dict:
+	def QY(self, reactivity: dict, which_molecule_calss) -> tuple(dict, dict):
+		print(f'\n\nWe compute QY as requested\n\n')
 		# counts dict has key = reactivity and values = number of trajectory showing that pathway
 		counts_result = self.COUNTS(reactivity)
 		#print(counts_result)
 		# qy_result is the dictionary that contains the qy. key = reactivity and values = qy.
 		qy_result = {}
+		total = {}
 		for window, counts_window in counts_result.items():
+			print (f"{PARAM_FILE.bcolors.OKBLUE} Energy window {window} eV{PARAM_FILE.bcolors.ENDC}")
 			qy_result[window] = defaultdict(int)
 			for key, value in counts_window.items():
 				descriptors_for_the_key = which_molecule_calss.dic_reactivity.get(key)
@@ -128,14 +131,14 @@ class GlobalAnalysis():
 					index_for_the_key = descriptors_for_the_key[0]
 					qy_result[window][index_for_the_key] += value
 				else: 
-					print(f'Found the following {key} key that is not present in the molecule class')
+					print(f'Found the following {key} key that is not present in the molecule class with value {value}')
 
 			total = sum(qy_result[window].values())
 			for key, value in qy_result[window].items():
 				qy_result[window][key] = value/total 
 			qy_result[window] = OrderedDict(sorted(qy_result[window].items()))
 
-		return qy_result
+		return qy_result, total
 
 	def COUNTS(self, reactivity: dict) -> dict:
 		count_result = {}

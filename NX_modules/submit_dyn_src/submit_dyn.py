@@ -18,7 +18,7 @@ def LABEL_TRAJ(PWD: str, wanted_traj: int, total_traj: int):
     print(f"The expected number of trajectory to submit are: {prob*len(all_traj):10.2f}")
     to_submit_file = f"{PWD}/{PARAM_FILE.to_submit_file}"
     fp = open(to_submit_file, 'w')
-    fp.write(f"TRAJ n\tRandom number")
+    fp.write(f"TRAJ n\tRandom number\n")
     for traj_name in all_traj:
         # Random number between 0 and 1
         rd	= random()			        
@@ -88,7 +88,7 @@ def SUBMIT_DYNAMICS(PWD: str):
             default_wanted_traj = 30
             wanted_traj = input(f"How many trajectory you want? ({default_wanted_traj:5.0f} default) ")
             wanted_traj = CHECK_INPUT_AND_DEFAULT(wanted_traj, default_wanted_traj)
-            default_total_traj = 476+295+30+1
+            default_total_traj = 202+466+418+178+36+3
             total_traj = input(f"How many trajectory in total? ({default_total_traj:5.0f} default) ")
             total_traj = CHECK_INPUT_AND_DEFAULT(total_traj, default_total_traj)
             print(f"Number of traj requested: {wanted_traj} and number of total trajectories: {total_traj}")
