@@ -24,6 +24,8 @@ class BH3NH3:
     folder_restart = "UMP2-RESTART"                       
     # Restart Folder Template
     restart_template = "/ddn/home/fzzq22/CODE_AND_SCRIPT/TEMPLATE_RESTARTs/BH3NH3-NX_UMP2/"
+    thresh_d1 = 0.05
+
 #-----------------------------------------------------------------------------------------------------------------------------------------------------#
     def CHECK_REACTIVITY_BH3NH3(coordinate_file, summary, data):
         check = False
@@ -59,7 +61,7 @@ class BH3NH3:
             summary += f"\tUNDERTERMINED"
             data += 'NOTDETER'
         return summary, data
-#-----------------------------------------------------------------------------------------------------------------------------------------------------#
+
     def CHECK_REACTIVITY(result_folder: str, summary: str, data: str, time_traj: str, time_validity: str, check: bool) -> tuple[str, str]:
         coordinate_file_to_use = f'{result_folder}/{PARAM_FILE.coordinate_file_to_use}'
         # Check the D1 diagonistic. If we want to perform the check the bool variable will be True
@@ -77,6 +79,25 @@ class BH3NH3:
         summary, data = CHECK_REACTIVITY_BH3NH3(coordinate_file_to_use, summary, data)
         return summary, data
 
+#----------------------------------------------------------------------------------------------------------------------------#                                  
+    def WRITE_GEOMETRICAL_CORDINATES_BH3NH3_GP(input_coord, gnuplot_time_label):
+        gnuplot_coord   = '';	index           = []
+        if ( "A" in input_coord ):
+            gnuplot_coord 	+= '  plot "COORDINATES.out" using %s:2 w l lw 5 dt 11 lc rgbcolor "#FF4500" title "N-B bond" axes x1y2'   % (gnuplot_time_label)  # Orange
+            y2label 	=  '"Bond Length ({\\305})"'
+            index.append(2)
+        if ( "B" in input_coord ):
+            gnuplot_coord += ', \\\n  "" using %s:3 w l lw 5 dt 11 lc rgbcolor "#660033" title "N-H bonds" axes x1y2'   	% (gnuplot_time_label)  # Purple
+            gnuplot_coord += ', \\\n  "" using %s:4 w l lw 5 dt 11 lc rgbcolor "#660033" notitle axes x1y2'   		        % (gnuplot_time_label)  
+            gnuplot_coord += ', \\\n  "" using %s:5 w l lw 5 dt 11 lc rgbcolor "#660033" notitle axes x1y2'   		        % (gnuplot_time_label)  	
+            index.append(3); index.append(4); index.append(5)
+        if ( "C" in input_coord ):
+            gnuplot_coord += ', \\\n  "" using %s:6 w l lw 5 dt 11 lc rgbcolor "#FFD700" title "B-H bonds" axes x1y2'        % (gnuplot_time_label)  
+            gnuplot_coord += ', \\\n  "" using %s:7 w l lw 5 dt 11 lc rgbcolor "#FFD700" notitle axes x1y2'                  % (gnuplot_time_label)
+            gnuplot_coord += ', \\\n  "" using %s:8 w l lw 5 dt 11 lc rgbcolor "#FFD700" notitle axes x1y2'                  % (gnuplot_time_label)
+            index.append(6); index.append(7); index.append(8)
+
+        return gnuplot_coord, y2label, index
 
 def main():
     pass

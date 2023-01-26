@@ -3,12 +3,14 @@
 
 here=`pwd`
 cd ${here}
-
 . load-NX.sh
+file=mkd_saved.inp
+rm -f ${file}
+
 read -p "Last excited state computed: " states
 
 folder="/ddn/home/fzzq22/CODE_AND_SCRIPT/NX_modules/"
-file=${folder}/mkd_saved.inp
+file=${folder}/${file}
 for ((i=2; i<=${states}; i++))
 do
 	# re-new the mkd file that will be used by the perl script

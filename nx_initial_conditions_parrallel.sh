@@ -88,16 +88,28 @@ runIC() {
         echo -e "\n"
 }
 
+checkIC() {
+        folder_merged=$1
+        output=`grep -c "ricc2 ended abnormally" ${folder_merged}/DEBUG/runnx.error`
+        if [[ ${output} > 0 ]]; then 
+                echo -e "Failed calculation in $2"
+                echo -e "Total number of point that failed to converge are ${output}"
+        fi
+}
+
 mergeIC() {
         local ncal=$1
         
-        for ((i=1; i<=$(($ncal)); i++ ))
+        for ((i=1; i<=$(($ncal)); i++))
         do
                 folder="IC_${i}"
-                cp -r ${here}/${folder_ic}/${folder}/I_merged ${here}/${folder_ic}/I${i}
+                folder_merged=${here}/${folder_ic}/${folder}/I_merged
+
+                checkIC ${folder_merged} ${folder}
+                cp -r ${folder_merged} ${here}/${folder_ic}/I${i}
         done
         cd ${here}/${folder_ic}
-        $NX/merge_initcond.pl <<EOF
+        $NX/merge_initcond.pl > /dev/null <<EOF
 ${ncal}
 EOF
         echo -e "\n"
@@ -107,10 +119,25 @@ totic=500
 split=10
 msplit=$((${totic}/${split}))
 
+read -p "Do you want generate the initial conditions?           " inputgic
+read -p "Do you want run the calculation to compute the spectra " inputrunic
+if [ -f "${folder_ic}/IC_1/I_merged/final_output.1.2" ]; then 
+        read -p "Do you want merge all initial condition folders?       " inputmergeic
+fi
+
 echo -e "Number of geometries are: ${totic}"
 echo -e "Number of geometries for each IC: ${msplit}"
 echo -e "\n"
-#generateIC ${totic}
-#splitIC ${split} ${msplit}
-#runIC $split
-mergeIC $split
+
+if [ "${inputgic,,}" == "y" ]; then 
+        generateIC ${totic}
+        splitIC ${split} ${msplit}
+fi
+
+if [ "${inputrunic,,}" == "y" ]; then 
+        runIC ${split}
+fi
+
+if [ "${inputmergeic,,}" == "y" ]; then 
+        mergeIC ${split}
+fi

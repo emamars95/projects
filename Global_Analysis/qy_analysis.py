@@ -2,15 +2,17 @@
 
 import os
 import sys
-import numpy     as np 
-from glob        import glob
-from os.path 	 import isfile
-from collections import defaultdict, OrderedDict
+import numpy     	as np 
+from glob        	import glob
+from os.path 	 	import isfile
+from collections 	import defaultdict, OrderedDict
+#from copy 		 	import deepcopy
 
-from TOOLS      import GET_DATA, sorted_nicely
-from TRAJECTORY_MODULES import READING_PARAMETER_FILE, WHICH_MOLECULE
-from write_qy.write_qy import WRITE_QY_FILE
-from plot.plot import PREP_PLOT_QY 
+
+from TOOLS      			import GET_DATA, sorted_nicely
+from TRAJECTORY_MODULES 	import READING_PARAMETER_FILE, WHICH_MOLECULE
+from write_files.write_qy 	import WRITE_QY_FILE
+from plot.plot 				import PREP_PLOT_QY 
 import PARAM_FILE
 
 PWD     = os.getcwd()
@@ -29,12 +31,12 @@ def COMPUTE_QY():
 	qy_result = GlobalAnalysis().QY(reactivity_excited, molecule_class)
 	WRITE_QY_FILE(qy_result, molecule_class, name_file=PARAM_FILE.qy_file)
 
-	file_traj = PARAM_FILE.traj_file_restart
-	reactivity_restarted = GlobalAnalysis().ANALYSIS(file_traj)
+#	file_traj = PARAM_FILE.traj_file_restart
+#	reactivity_restarted = GlobalAnalysis().ANALYSIS(file_traj)
 
-	reactivity_final = MERGE_RESTARTED(reactivity_excited, reactivity_restarted, molecule_class)
-	qy_result = GlobalAnalysis().QY(reactivity_final, molecule_class)
-	WRITE_QY_FILE(qy_result, molecule_class, name_file=PARAM_FILE.qy_file_restart)
+#	reactivity_final = MERGE_RESTARTED(reactivity_excited, reactivity_restarted, molecule_class)
+#	qy_result = GlobalAnalysis().QY(reactivity_final, molecule_class)
+#	WRITE_QY_FILE(qy_result, molecule_class, name_file=PARAM_FILE.qy_file_restart)
 	return
 
 # -------------------------------------------------------------------------------------	#
@@ -113,14 +115,15 @@ class GlobalAnalysis():
 			del dictionary[key]
 		return dictionary
 
-	def QY(self, reactivity: dict, which_molecule_calss) -> tuple(dict, dict):
+	# This subroutine compute the QY for each reactive channel and energy window in the dynamics
+	# Here we consider only the process that are meaningful 
+	def QY(self, reactivity: dict, which_molecule_calss) -> tuple[dict, dict]:
 		print(f'\n\nWe compute QY as requested\n\n')
 		# counts dict has key = reactivity and values = number of trajectory showing that pathway
 		counts_result = self.COUNTS(reactivity)
 		#print(counts_result)
 		# qy_result is the dictionary that contains the qy. key = reactivity and values = qy.
 		qy_result = {}
-		total = {}
 		for window, counts_window in counts_result.items():
 			print (f"{PARAM_FILE.bcolors.OKBLUE} Energy window {window} eV{PARAM_FILE.bcolors.ENDC}")
 			qy_result[window] = defaultdict(int)
@@ -131,15 +134,18 @@ class GlobalAnalysis():
 					index_for_the_key = descriptors_for_the_key[0]
 					qy_result[window][index_for_the_key] += value
 				else: 
-					print(f'Found the following {key} key that is not present in the molecule class with value {value}')
+					print(f'{PARAM_FILE.bcolors.WARNING}Found the following "{key} key" with occurencies: {value}. It is not present in the molecule class!{PARAM_FILE.bcolors.ENDC}')
+					print(f'This information will be not saved in any file, plase take note if useful')
 
+			qy_result[window] = OrderedDict(sorted(qy_result[window].items()))
 			total = sum(qy_result[window].values())
 			for key, value in qy_result[window].items():
-				qy_result[window][key] = value/total 
-			qy_result[window] = OrderedDict(sorted(qy_result[window].items()))
+				qy_result[window][key] = [value/total, ((value * (total - value))/(total)**3)**(1/2)] 
+		#print(qy_result)
+		return qy_result
 
-		return qy_result, total
-
+	# This subroutine produce a total sum of the different reaction channel found in the dynamics
+	# Notice that this dictionary cotain all key found in the file, disregarding if they are considered errors, artifacts, ecc..
 	def COUNTS(self, reactivity: dict) -> dict:
 		count_result = {}
 		for window, reactivity_window in reactivity.items():
@@ -158,7 +164,7 @@ class GlobalAnalysis():
 			values = window.split('_')[3].split('-')
 			max_energy, min_energy = float(values[0]), float(values[1])
 			# it is simply the average energy of the window used to plot the value associated with each window								
-			average_energy = int((max_energy + min_energy)/2)	
+			average_energy = (max_energy + min_energy)/2
 			return average_energy
 		except:
 			raise ValueError(f"It looks like the format of the folder {window} is not correct")		

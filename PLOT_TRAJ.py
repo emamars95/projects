@@ -97,7 +97,7 @@ def main():
 	# ---------------------------------------------------------------------------------------------- #
 	label_molecule, class_molecule  = TRAJECTORY_MODULES.GET_MOLECULE_LABEL(template_geo)
 	if time_dyn > time_xyz or not isfile(PARAM_FILE.coordinate_file):									# The dynamics is saved in dyn.xyz, however otput xyz was necessary to extract coordinates
-		TRAJECTORY_MODULES.MAKE_GEOMETRICAL_COORDINATES(timestep, template_geo, label_molecule) 		# Recoupute the COORDINATES.out file
+		TRAJECTORY_MODULES.MAKE_GEOMETRICAL_COORDINATES(timestep, template_geo) 						# Recoupute the COORDINATES.out file
 	# ---------------------------------------------------------------------------------------------- #
 	if rangexmax == 0.0:																				# If a not particular time is given in input
 		rangexmax = timebreak + 5	# + (2.0 * timebreak / 100) #Use the time. The extra lenght is only for nice plots not ending with the end of the dynamics.
@@ -115,7 +115,7 @@ def main():
 	if calculation == "SH":
 		gnuplot_script += TRAJECTORY_MODULES.WRITE_SH_STATE_GP(nmstates, state_list, gnuplot_time_label, "output_data/expec_MCH.out", time_restart, restart)
 	#We write the last part containing the geometrical coordinates and the breakline at time = timebreak
-	gnuplot_script += TRAJECTORY_MODULES.WRITE_COORDS_AND_BREAKLINE(rangeymax, rangey2min, rangey2max, positionlabel2, timebreak, breakreason, input_coord, gnuplot_time_label, label_molecule)
+	gnuplot_script += TRAJECTORY_MODULES.WRITE_COORDS_AND_BREAKLINE(rangeymax, rangey2min, rangey2max, positionlabel2, timebreak, breakreason, input_coord, gnuplot_time_label, class_molecule)
 	#We write the string into the file (that will remain in the folder)
 	with open(PARAM_FILE.gnuplot_file_traj, 'w') as gnuplot_script_FILE:
 		sys.stdout = gnuplot_script_FILE	# Change the standard output to the file we created.

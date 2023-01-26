@@ -33,7 +33,7 @@ multi_state()
     fi
     # We initialize the running state and the total number of states to be included in the dynamics
     nstatdyn=2
-    nstat=5 
+    nstat=8 
     # We create the input file for makedir.pl 
     cat <<EOT > mkd.inp
     type = 4

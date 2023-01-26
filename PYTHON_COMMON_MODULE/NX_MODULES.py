@@ -11,21 +11,21 @@ import PARAM_FILE
 # This check the file from the last line to the first line 
 # In input      min_time : the first time from which you want to look for
 #               MAX_TILE : the max time for which you want to look for
-def GET_TIME_BASED_ON_D1_REVERSED(result_folder, min_time, max_time):
+def GET_TIME_BASED_ON_D1_REVERSED(result_folder, min_time, max_time, thresh_d1):
 	for line in reversed( list( open( "%s/%s" %(result_folder, PARAM_FILE.d1_file), "r") ) ):
 		time, D1 = float(line.rstrip().split()[0]), float(line.rstrip().split()[1])
 		if time <= max_time:
-			if D1 <= PARAM_FILE.thresh_d1:	break
+			if D1 <= thresh_d1:	break
 			if time <= min_time:		break
 	print("Returning D1: ", D1, " read at time: ", time)
 	return time, D1
 
 # This check the file from the first line to the last line 
-def GET_TIME_BASED_ON_D1(result_folder, min_time, max_time):
+def GET_TIME_BASED_ON_D1(result_folder, min_time, max_time, thresh_d1):
 	for line in open( "%s/%s" %(result_folder, PARAM_FILE.d1_file), "r" ):
 		time_tmp, D1_tmp = float(line.rstrip().split()[0]), float(line.rstrip().split()[1])
 		if time_tmp >= min_time:
-			if    D1_tmp  >= PARAM_FILE.thresh_d1:	break	# We want the previus step, i.e. when D1 is < thresh
+			if    D1_tmp  >= thresh_d1:	break	# We want the previus step, i.e. when D1 is < thresh
 			else: D1, time = D1_tmp, time_tmp	
 			if time >= max_time:	break
 	print("Returning D1: ", D1, " read at time: ", time, "\n")

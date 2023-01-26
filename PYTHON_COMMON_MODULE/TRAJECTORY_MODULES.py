@@ -4,7 +4,8 @@ import os
 import subprocess
 from json 			import loads
 from TOOLS 			import GET_DATA
-from molecules  	import *  
+from molecules  	import * 
+from molecules  	import Pyridine_BoricAcid
 import PARAM_FILE
 
 #----------------------------------------------------------------------------------------------------------------------------#
@@ -121,19 +122,22 @@ def TRAJECTORY_BREAK_NX(EnergyFile, nmstates, timestep):
 
 #----------------------------------------------------------------------------------------------------------------------------#
 def GET_MOLECULE_LABEL(template_geo):
-	if   "HPP" 	in template_geo:
+	if   "HPP" in template_geo:
 		label = "HPP" 
-	elif "HPAC" 	in template_geo:
+	elif "HPAC" in template_geo:
 		label = "HPAC"
-	elif "PYRONE" 	in template_geo:
+	elif "PYRONE" in template_geo:
 		label = "PYRONE"
 	elif "FORMALDEHYDE" in template_geo:
 		label = "FORMALDEHYDE"
 	elif "ACROLEIN" in template_geo:
 		label = "ACROLEIN"
-	elif "BH3NH3" 	in template_geo:
+	elif "BH3NH3" in template_geo:
 		label = "BH3NH3"
 		class_molecule = BH3NH3.BH3NH3
+	elif "Pyridine_BoricAcid" in template_geo:
+		label = "Pyridine_BoricAcid"
+		class_molecule = Pyridine_BoricAcid.Pyridine_BoricAcid
 	elif "Pyridine" in template_geo:
 		label = "Pyridine"
 		class_molecule = Pyridine.Pyridine
@@ -145,25 +149,11 @@ def GET_MOLECULE_LABEL(template_geo):
 	return label, class_molecule
 
 #----------------------------------------------------------------------------------------------------------------------------#	
-def MAKE_GEOMETRICAL_COORDINATES(timestep, template_geo, label_molecule):
+def MAKE_GEOMETRICAL_COORDINATES(timestep, template_geo):
     os.system("cp -f dyn.xyz output.xyz")						# Python script read the file output.xyz
     programgeo = '/nobackup/zcxn55/SOFTWARE/SHARC-2.1-corr-edc/bin/geo.py'
     cmd = f"python2 {programgeo} -t {timestep:5.2f} < {template_geo} > {PARAM_FILE.coordinate_file}"
     os.system(cmd)								# The tmp coordinate file is created
-    if label_molecule == "HPP" or label_molecule == "HPAC":
-        label = "   time\t\tO-O\t\t\tO-H\t\t\tO--H\t\tC-C\t\t\tC=0\t\tC=O pyramid\t\tC-O\t\td 3 1 4 10\t\td 2 1 4 10\t\tC1--O11"
-    elif label_molecule == "PYRONE":
-        label = "   time\t\tC=0"
-    elif label_molecule == "FORMALDEHYDE":
-        label = "   time\t\tC=0"
-    elif label_molecule == "ACROLEIN":
-        label = "   time\t\tC=0"
-    elif label_molecule == "BH3NH3":
-        label = "   time\t\t\tB-N\t\t\tN-H\t\tN-H\t\t\tN-H\t\tB-H\t\t\tB-H\t\tB-H\t\tNH3 pyramid\t\tBH3 pyramid"
-    elif label_molecule == "Pyridine":
-        label = "   time\t\t\tB-N\t\t\tB-H\t\t\tB-H\t\tB-H\t\tBH3 pyramid"
-    elif label_molecule == "Nucleic_Acid":
-        label = "   time\t\tC-O\t\t\tC-C"
     os.system("sed -i '1d' %s" 		%(PARAM_FILE.coordinate_file))
     os.system('sed -i "s/time.*/%s/g" ' %(PARAM_FILE.coordinate_file))
     return
@@ -211,40 +201,6 @@ def WRITE_GEOMETRICAL_CORDINATES_HPP_GP(input_coord, gnuplot_time_label):
 		y2label = '"Bond Length ({\\305}) / Angle (10^-^1)"'
 #y2label is the label associated with the second plot of multiplot. Depending on which coordinate you chose it can change.
 	return gnuplot_coord, y2label, index
-
-#----------------------------------------------------------------------------------------------------------------------------#                                  
-def WRITE_GEOMETRICAL_CORDINATES_BH3NH3_GP(input_coord, gnuplot_time_label):
-	gnuplot_coord   = '';	index           = []
-	if ( "A" in input_coord ):
-		gnuplot_coord 	+= '  plot "COORDINATES.out" using %s:2 w l lw 5 dt 11 lc rgbcolor "#FF4500" title "N-B bond" axes x1y2'   % (gnuplot_time_label)  # Orange
-		y2label 	=  '"Bond Length ({\\305})"'
-		index.append(2)
-	if ( "B" in input_coord ):
-		gnuplot_coord += ', \\\n  "" using %s:3 w l lw 5 dt 11 lc rgbcolor "#660033" title "N-H bonds" axes x1y2'   	% (gnuplot_time_label)  # Purple
-		gnuplot_coord += ', \\\n  "" using %s:4 w l lw 5 dt 11 lc rgbcolor "#660033" notitle axes x1y2'   		% (gnuplot_time_label)  
-		gnuplot_coord += ', \\\n  "" using %s:5 w l lw 5 dt 11 lc rgbcolor "#660033" notitle axes x1y2'   		% (gnuplot_time_label)  	
-		index.append(3); index.append(4); index.append(5)
-	if ( "C" in input_coord ):
-		gnuplot_coord += ', \\\n  "" using %s:6 w l lw 5 dt 11 lc rgbcolor "#FFD700" title "B-H bonds" axes x1y2'        % (gnuplot_time_label)  
-		gnuplot_coord += ', \\\n  "" using %s:7 w l lw 5 dt 11 lc rgbcolor "#FFD700" notitle axes x1y2'                  % (gnuplot_time_label)
-		gnuplot_coord += ', \\\n  "" using %s:8 w l lw 5 dt 11 lc rgbcolor "#FFD700" notitle axes x1y2'                  % (gnuplot_time_label)
-		index.append(6); index.append(7); index.append(8)
-
-	return gnuplot_coord, y2label, index
-
-#----------------------------------------------------------------------------------------------------------------------------#                                  
-def WRITE_GEOMETRICAL_CORDINATES_Pyridine_GP(input_coord, gnuplot_time_label):
-    gnuplot_coord   = '';   index           = []
-    if ( "A" in input_coord ):
-            gnuplot_coord   += '  plot "COORDINATES.out" using %s:2 w l lw 5 dt 11 lc rgbcolor "#FF4500" title "N-B bond" axes x1y2'   % (gnuplot_time_label)  # Orange
-            y2label         =  '"Bond Length ({\\305})"'
-            index.append(2)
-    if ( "B" in input_coord ):
-            gnuplot_coord += ', \\\n  "" using %s:3 w l lw 5 dt 11 lc rgbcolor "#FFD700" title "B-H bonds" axes x1y2'        % (gnuplot_time_label)
-            gnuplot_coord += ', \\\n  "" using %s:4 w l lw 5 dt 11 lc rgbcolor "#FFD700" notitle axes x1y2'                  % (gnuplot_time_label)
-            gnuplot_coord += ', \\\n  "" using %s:5 w l lw 5 dt 11 lc rgbcolor "#FFD700" notitle axes x1y2'                  % (gnuplot_time_label)
-            index.append(3); index.append(4); index.append(5)
-    return gnuplot_coord, y2label, index
 
 #----------------------------------------------------------------------------------------------------------------------------#
 def WRITE_GEOMETRICAL_CORDINATES_Nucleic_Acid_GP(input_coord, gnuplot_time_label):
@@ -334,18 +290,19 @@ def WRITE_SH_STATE_GP_RESTARTED(state_list, time_restart, lisline):
 	return gnuplot_state
 
 #----------------------------------------------------------------------------------------------------------------------------#
-def WRITE_COORDS_AND_BREAKLINE(rangeymax, rangey2min, rangey2max, positionlabel2, time_break, break_reason, input_coord, gnuplot_time_label, label_molecule):
-#Plot the second part with multipot
-	if 	label_molecule == "HPP":
-		gnuplot_coord, y2label, index = WRITE_GEOMETRICAL_CORDINATES_HPP_GP(input_coord, gnuplot_time_label)
-	elif 	label_molecule == "BH3NH3":
-		gnuplot_coord, y2label, index = WRITE_GEOMETRICAL_CORDINATES_BH3NH3_GP(input_coord, gnuplot_time_label)
-	elif	label_molecule == "Pyridine":
-		gnuplot_coord, y2label, index = WRITE_GEOMETRICAL_CORDINATES_Pyridine_GP(input_coord, gnuplot_time_label) 
-	elif 	label_molecule == "Nucleic_Acid":
-		gnuplot_coord, y2label, index = WRITE_GEOMETRICAL_CORDINATES_Nucleic_Acid_GP(input_coord, gnuplot_time_label)
-	else:
-		print ("\n * Not implemented for molecule * \n", label_molecule)
+def WRITE_COORDS_AND_BREAKLINE(rangeymax, rangey2min, rangey2max, positionlabel2, time_break, break_reason, input_coord, gnuplot_time_label, class_molecule):
+# Plot the second part with multipot
+	gnuplot_coord, y2label, index = class_molecule.WRITE_GEOMETRICAL_CORDINATES(input_coord, gnuplot_time_label)
+#	if 	label_molecule == "HPP":
+#		gnuplot_coord, y2label, index = WRITE_GEOMETRICAL_CORDINATES_HPP_GP(input_coord, gnuplot_time_label)
+#	elif 	label_molecule == "BH3NH3":
+#		gnuplot_coord, y2label, index = WRITE_GEOMETRICAL_CORDINATES_BH3NH3_GP(input_coord, gnuplot_time_label)
+#	elif	label_molecule == "Pyridine":
+#		gnuplot_coord, y2label, index = WRITE_GEOMETRICAL_CORDINATES_Pyridine_GP(input_coord, gnuplot_time_label) 
+#	elif 	label_molecule == "Nucleic_Acid":
+#		gnuplot_coord, y2label, index = WRITE_GEOMETRICAL_CORDINATES_Nucleic_Acid_GP(input_coord, gnuplot_time_label)
+#	else:
+#		print ("\n * Not implemented for molecule * \n", label_molecule)
 
 	gnuplot_final  = ''
 	gnuplot_final += '  unset key\n  unset ylabel\n  unset yrange\n  unset ytics\n'

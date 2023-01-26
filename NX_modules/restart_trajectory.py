@@ -82,7 +82,7 @@ def main():
 	dictionary = READING_PARAMETER_FILE(param_file)
 	state_list, timestep, template_geo = dictionary.get('states').split(), dictionary.get('time_step'), dictionary.get('template_geo')
 	which_molecule, class_molecule = GET_MOLECULE_LABEL(template_geo)
-	natoms = class_molecule.natoms
+	natoms, thresh_d1 = class_molecule.natoms, class_molecule.thresh_d1
     # Compute the total number of state used in NX along the dynamics				 	#
 	nmstates, nstates = COUNTING_STATES(state_list)
     # Compute the time at which the dynamics is not anymore valid, i.e. crossing between S0 and S1		#
@@ -91,8 +91,8 @@ def main():
     # Refine the time at which the dynamics has to be restarted looking at the d1 before the crossing	#
 	if breakreason: 
 		timebreak = timebreak - timestep
-	#correct_time, D1 = NX_MODULES.GET_TIME_BASED_ON_D1_REVERSED(PWD, timebreak - 15, timebreak)
-	correct_time, D1 = GET_TIME_BASED_ON_D1(PWD, 0, timebreak)
+	#correct_time, D1 = NX_MODULES.GET_TIME_BASED_ON_D1_REVERSED(PWD, timebreak - 15, timebreak, thresh_d1)
+	correct_time, D1 = GET_TIME_BASED_ON_D1(PWD, 0, timebreak, thresh_d1)
     #correct_time	 = correct_time - 30
 	print(f"{PARAM_FILE.bcolors.OKCYAN} At time {correct_time:5.2f} we have D1 {D1:5.3f} which is the under the limit for threshold {PARAM_FILE.thresh_d1:5.3f}{PARAM_FILE.bcolors.ENDC}")
 	correct_time    = timebreak

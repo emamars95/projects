@@ -88,7 +88,7 @@ def SUBMIT_DYNAMICS(PWD: str):
             default_wanted_traj = 30
             wanted_traj = input(f"How many trajectory you want? ({default_wanted_traj:5.0f} default) ")
             wanted_traj = CHECK_INPUT_AND_DEFAULT(wanted_traj, default_wanted_traj)
-            default_total_traj = 202+466+418+178+36+3
+            default_total_traj = 237+381+180+40+4
             total_traj = input(f"How many trajectory in total? ({default_total_traj:5.0f} default) ")
             total_traj = CHECK_INPUT_AND_DEFAULT(total_traj, default_total_traj)
             print(f"Number of traj requested: {wanted_traj} and number of total trajectories: {total_traj}")
